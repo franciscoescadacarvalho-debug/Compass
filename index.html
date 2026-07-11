@@ -41,7 +41,7 @@
   .topnav {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 24px; background: var(--card); border-bottom: 1px solid var(--line);
-    position: sticky; top: 0; z-index: 20;
+    position: sticky; top: 0; z-index: 20; gap: 12px; flex-wrap: wrap;
   }
   .brand { display: flex; align-items: center; gap: 8px; font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; }
   .brand svg { color: var(--gold); }
@@ -51,6 +51,8 @@
     padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--muted);
   }
   .nav-tab.active { background: var(--ink); color: var(--paper); }
+  .nav-account { display: flex; align-items: center; gap: 10px; }
+  .nav-username { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
   .page-wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 0; }
 
@@ -80,6 +82,8 @@
     padding: 6px 10px; border-radius: 999px; font-size: 13px;
   }
   .topic-chip { background: #FBEFDD; border-color: var(--gold); }
+  .strength-chip { background: #EAF4F1; border-color: var(--teal); color: var(--teal); }
+  .weakness-chip { background: #FBEDEA; border-color: var(--error); color: var(--error); }
   .tag-remove { border: none; background: none; cursor: pointer; font-size: 15px; color: var(--muted); line-height: 1; }
   .link-btn {
     border: none; background: none; color: var(--teal); cursor: pointer; font-size: 13px;
@@ -128,6 +132,8 @@
   .subject-pct { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--gold); margin: 6px 0 2px; }
   .subject-history { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
   .subject-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .sw-grid { grid-template-columns: 1fr; } }
 
   /* Subject detail */
   .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
@@ -185,6 +191,27 @@
   .del-btn { border: none; background: none; color: var(--error); cursor: pointer; font-size: 16px; padding: 4px 8px; }
   .add-event-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-top: 6px; }
   @media (max-width: 720px) { .add-event-form { grid-template-columns: 1fr 1fr; } }
+
+  /* Auth */
+  .auth-screen { max-width: 420px; margin: 60px auto; padding: 0 20px; }
+  .auth-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 32px 28px; }
+  .auth-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+  .auth-toggle button { flex: 1; justify-content: center; }
+  .auth-error { color: var(--error); font-size: 13px; margin-top: 8px; }
+  .auth-note { font-size: 11px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+
+  /* Trial / Paywall */
+  .trial-banner { background: #FBEFDD; border: 1px solid var(--gold); border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .paywall-screen { max-width: 640px; margin: 40px auto; padding: 0 20px 40px; }
+  .plan-grid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+  .plan-card { flex: 1; min-width: 180px; border: 1.5px solid var(--line); border-radius: 14px; padding: 18px; cursor: pointer; background: var(--card); }
+  .plan-card.selected { border-color: var(--gold); background: #FBEFDD; }
+  .plan-price { font-family: 'Fraunces', serif; font-size: 26px; margin: 6px 0; }
+  .plan-old-price { text-decoration: line-through; color: var(--muted); font-size: 14px; margin-right: 8px; }
+  .promo-row { display: flex; gap: 8px; margin-top: 10px; }
+  .promo-msg-ok { color: var(--teal); font-size: 13px; margin-top: 6px; }
+  .promo-msg-err { color: var(--error); font-size: 13px; margin-top: 6px; }
+  .demo-note { font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -218,6 +245,7 @@ const T = {
       ano: { label: "What grade are you in?" },
       curriculo: { label: "What curriculum are you following?", placeholder: "e.g. National, Cambridge, IB…" },
       disciplinas: { label: "Which subjects do you need help with?", placeholder: "Type a subject and press Enter" },
+      dificuldades: { label: "Any specific topics you struggle with in each subject?", placeholder: "Type a topic and press Enter" },
       tempoEstudoDia: { label: "How long do you usually study per day, in total?" },
       tempoPorDisciplina: { label: "How long do you usually study for each subject?" },
       localizacao: { label: "Where do you live?", placeholder: "City or area (optional)" },
@@ -283,6 +311,40 @@ const T = {
     reset_confirm: "This will erase your profile, plan, test history and agenda. Are you sure?",
     reset_button: "Yes, erase everything",
     cancel: "Cancel",
+    login_title: "Log in",
+    register_title: "Sign up",
+    username_label: "Username",
+    password_label: "Password",
+    login_button: "Log in",
+    register_button: "Create account",
+    login_error: "Invalid username or password.",
+    username_taken: "This username is already taken.",
+    logout: "Log out",
+    trial_days_left: (d) => (d > 0 ? `${d} day(s) left in your free trial` : "Your free trial has ended"),
+    choose_plan: "Choose a plan",
+    plan_monthly: "Monthly",
+    plan_yearly: "Yearly",
+    per_month: "/month",
+    per_year: "/year",
+    promo_label: "Promo code",
+    promo_apply: "Apply",
+    promo_invalid: "That code isn't valid.",
+    promo_used: "You've already used this code.",
+    promo_success: "Code applied!",
+    free_forever: "Free",
+    subscribe_now: "Subscribe",
+    demo_payment_note: "This is a simulated checkout — this prototype isn't connected to a real payment processor, so no real charge is made.",
+    paywall_title: "Your free trial has ended",
+    paywall_sub: "Subscribe to keep using Compass.",
+    manage_subscription: "Subscription",
+    active_plan_text: (plan, price) => `Active plan: ${plan} — €${price}`,
+    trial_active_text: (d) => `Free trial — ${d} day(s) left`,
+    view_plans: "View plans",
+    strengths_weaknesses_title: "Strengths & weaknesses",
+    strengths_title: "Strengths",
+    weaknesses_title: "Areas to improve",
+    no_strengths_yet: "Take a few tests to see your strengths.",
+    no_weaknesses_yet: "Take a few tests to see areas to improve.",
   },
   pt: {
     brand: "Bússola",
@@ -295,6 +357,7 @@ const T = {
       ano: { label: "Em que ano estás?" },
       curriculo: { label: "Que currículo estás a seguir?", placeholder: "Ex: Nacional, Cambridge, IB…" },
       disciplinas: { label: "Em que disciplinas precisas de ajuda?", placeholder: "Escreve uma disciplina e prime Enter" },
+      dificuldades: { label: "Tens dificuldades específicas em algum tópico de cada disciplina?", placeholder: "Escreve um tópico e prime Enter" },
       tempoEstudoDia: { label: "Quanto tempo costumas estudar por dia, ao todo?" },
       tempoPorDisciplina: { label: "Quanto tempo costumas estudar para cada disciplina?" },
       localizacao: { label: "Onde vives?", placeholder: "Cidade ou zona (opcional)" },
@@ -360,6 +423,40 @@ const T = {
     reset_confirm: "Isto vai apagar o teu perfil, plano, histórico de testes e agenda. Tens a certeza?",
     reset_button: "Sim, apagar tudo",
     cancel: "Cancelar",
+    login_title: "Entrar",
+    register_title: "Criar conta",
+    username_label: "Nome de utilizador",
+    password_label: "Palavra-passe",
+    login_button: "Entrar",
+    register_button: "Criar conta",
+    login_error: "Utilizador ou palavra-passe inválidos.",
+    username_taken: "Este nome de utilizador já existe.",
+    logout: "Sair",
+    trial_days_left: (d) => (d > 0 ? `Restam ${d} dia(s) do teu período gratuito` : "O teu período gratuito terminou"),
+    choose_plan: "Escolhe um plano",
+    plan_monthly: "Mensal",
+    plan_yearly: "Anual",
+    per_month: "/mês",
+    per_year: "/ano",
+    promo_label: "Código promocional",
+    promo_apply: "Aplicar",
+    promo_invalid: "Esse código não é válido.",
+    promo_used: "Já usaste este código.",
+    promo_success: "Código aplicado!",
+    free_forever: "Grátis",
+    subscribe_now: "Subscrever",
+    demo_payment_note: "Isto é um checkout simulado — este protótipo não está ligado a nenhum processador de pagamentos real, por isso não é feita nenhuma cobrança real.",
+    paywall_title: "O teu período gratuito terminou",
+    paywall_sub: "Subscreve para continuares a usar a Bússola.",
+    manage_subscription: "Subscrição",
+    active_plan_text: (plan, price) => `Plano ativo: ${plan} — €${price}`,
+    trial_active_text: (d) => `Período gratuito — restam ${d} dia(s)`,
+    view_plans: "Ver planos",
+    strengths_weaknesses_title: "Pontos fortes e fracos",
+    strengths_title: "Pontos fortes",
+    weaknesses_title: "A melhorar",
+    no_strengths_yet: "Faz alguns testes para veres os teus pontos fortes.",
+    no_weaknesses_yet: "Faz alguns testes para veres o que precisas de melhorar.",
   },
   es: {
     brand: "Brújula",
@@ -372,6 +469,7 @@ const T = {
       ano: { label: "¿En qué grado estás?" },
       curriculo: { label: "¿Qué currículo sigues?", placeholder: "Ej: Nacional, Cambridge, IB…" },
       disciplinas: { label: "¿En qué asignaturas necesitas ayuda?", placeholder: "Escribe una asignatura y pulsa Enter" },
+      dificuldades: { label: "¿Tienes dificultades específicas en algún tema de cada asignatura?", placeholder: "Escribe un tema y pulsa Enter" },
       tempoEstudoDia: { label: "¿Cuánto tiempo sueles estudiar al día, en total?" },
       tempoPorDisciplina: { label: "¿Cuánto tiempo sueles estudiar para cada asignatura?" },
       localizacao: { label: "¿Dónde vives?", placeholder: "Ciudad o zona (opcional)" },
@@ -437,6 +535,40 @@ const T = {
     reset_confirm: "Esto borrará tu perfil, plan, historial de exámenes y agenda. ¿Estás seguro?",
     reset_button: "Sí, borrar todo",
     cancel: "Cancelar",
+    login_title: "Iniciar sesión",
+    register_title: "Crear cuenta",
+    username_label: "Usuario",
+    password_label: "Contraseña",
+    login_button: "Iniciar sesión",
+    register_button: "Crear cuenta",
+    login_error: "Usuario o contraseña inválidos.",
+    username_taken: "Ese nombre de usuario ya existe.",
+    logout: "Cerrar sesión",
+    trial_days_left: (d) => (d > 0 ? `Quedan ${d} día(s) de tu prueba gratuita` : "Tu prueba gratuita ha terminado"),
+    choose_plan: "Elige un plan",
+    plan_monthly: "Mensual",
+    plan_yearly: "Anual",
+    per_month: "/mes",
+    per_year: "/año",
+    promo_label: "Código promocional",
+    promo_apply: "Aplicar",
+    promo_invalid: "Ese código no es válido.",
+    promo_used: "Ya has usado este código.",
+    promo_success: "¡Código aplicado!",
+    free_forever: "Gratis",
+    subscribe_now: "Suscribirse",
+    demo_payment_note: "Este es un pago simulado — este prototipo no está conectado a ningún procesador de pagos real, así que no se realiza ningún cobro real.",
+    paywall_title: "Tu prueba gratuita ha terminado",
+    paywall_sub: "Suscríbete para seguir usando Brújula.",
+    manage_subscription: "Suscripción",
+    active_plan_text: (plan, price) => `Plan activo: ${plan} — €${price}`,
+    trial_active_text: (d) => `Prueba gratuita — quedan ${d} día(s)`,
+    view_plans: "Ver planes",
+    strengths_weaknesses_title: "Puntos fuertes y débiles",
+    strengths_title: "Puntos fuertes",
+    weaknesses_title: "Por mejorar",
+    no_strengths_yet: "Haz algunos exámenes para ver tus puntos fuertes.",
+    no_weaknesses_yet: "Haz algunos exámenes para ver qué mejorar.",
   },
   fr: {
     brand: "Boussole",
@@ -449,6 +581,7 @@ const T = {
       ano: { label: "En quelle année es-tu ?" },
       curriculo: { label: "Quel programme suis-tu ?", placeholder: "Ex : National, Cambridge, IB…" },
       disciplinas: { label: "Dans quelles matières as-tu besoin d'aide ?", placeholder: "Tape une matière et appuie sur Entrée" },
+      dificuldades: { label: "As-tu des difficultés spécifiques dans certains sujets de chaque matière ?", placeholder: "Tape un sujet et appuie sur Entrée" },
       tempoEstudoDia: { label: "Combien de temps étudies-tu par jour, au total ?" },
       tempoPorDisciplina: { label: "Combien de temps étudies-tu pour chaque matière ?" },
       localizacao: { label: "Où habites-tu ?", placeholder: "Ville ou région (facultatif)" },
@@ -514,18 +647,52 @@ const T = {
     reset_confirm: "Cela effacera ton profil, ton plan, ton historique de tests et ton agenda. Es-tu sûr(e) ?",
     reset_button: "Oui, tout effacer",
     cancel: "Annuler",
+    login_title: "Connexion",
+    register_title: "Créer un compte",
+    username_label: "Nom d'utilisateur",
+    password_label: "Mot de passe",
+    login_button: "Connexion",
+    register_button: "Créer un compte",
+    login_error: "Nom d'utilisateur ou mot de passe invalide.",
+    username_taken: "Ce nom d'utilisateur existe déjà.",
+    logout: "Déconnexion",
+    trial_days_left: (d) => (d > 0 ? `Il reste ${d} jour(s) d'essai gratuit` : "Ton essai gratuit est terminé"),
+    choose_plan: "Choisis un plan",
+    plan_monthly: "Mensuel",
+    plan_yearly: "Annuel",
+    per_month: "/mois",
+    per_year: "/an",
+    promo_label: "Code promo",
+    promo_apply: "Appliquer",
+    promo_invalid: "Ce code n'est pas valide.",
+    promo_used: "Tu as déjà utilisé ce code.",
+    promo_success: "Code appliqué !",
+    free_forever: "Gratuit",
+    subscribe_now: "S'abonner",
+    demo_payment_note: "Ceci est un paiement simulé — ce prototype n'est connecté à aucun processeur de paiement réel, donc aucun paiement réel n'est effectué.",
+    paywall_title: "Ton essai gratuit est terminé",
+    paywall_sub: "Abonne-toi pour continuer à utiliser Boussole.",
+    manage_subscription: "Abonnement",
+    active_plan_text: (plan, price) => `Plan actif : ${plan} — €${price}`,
+    trial_active_text: (d) => `Essai gratuit — il reste ${d} jour(s)`,
+    view_plans: "Voir les plans",
+    strengths_weaknesses_title: "Points forts et faibles",
+    strengths_title: "Points forts",
+    weaknesses_title: "À améliorer",
+    no_strengths_yet: "Passe quelques tests pour voir tes points forts.",
+    no_weaknesses_yet: "Passe quelques tests pour voir ce qu'il faut améliorer.",
   },
 };
 
 const LANG_NAME_FOR_AI = { en: "English", pt: "European Portuguese", es: "Spanish", fr: "French" };
 
-const STEP_ORDER = ["nome", "idade", "escola", "ano", "curriculo", "disciplinas", "tempoEstudoDia", "tempoPorDisciplina", "localizacao", "tempoDeslocacao"];
+const STEP_ORDER = ["nome", "idade", "escola", "ano", "curriculo", "disciplinas", "dificuldades", "tempoEstudoDia", "tempoPorDisciplina", "localizacao", "tempoDeslocacao"];
 const STEP_TYPES = {
   nome: "text", idade: "number", escola: "text", ano: "choice", curriculo: "text",
-  disciplinas: "tags", tempoEstudoDia: "choice", tempoPorDisciplina: "perDisciplina",
+  disciplinas: "tags", dificuldades: "perDisciplinaTags", tempoEstudoDia: "choice", tempoPorDisciplina: "perDisciplina",
   localizacao: "text", tempoDeslocacao: "choice",
 };
-const OPTIONAL_STEPS = { localizacao: true, tempoDeslocacao: true };
+const OPTIONAL_STEPS = { localizacao: true, tempoDeslocacao: true, dificuldades: true };
 const GRADE_NUMBERS = [5, 6, 7, 8, 9, 10, 11, 12];
 const DOW_KEYS = { en: ["Su","Mo","Tu","We","Th","Fr","Sa"], pt: ["Do","Se","Te","Qu","Qu","Se","Sá"], es: ["Do","Lu","Ma","Mi","Ju","Vi","Sá"], fr: ["Di","Lu","Ma","Me","Je","Ve","Sa"] };
 const MONTH_NAMES = {
@@ -535,6 +702,10 @@ const MONTH_NAMES = {
   fr: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
 };
 
+const TRIAL_DAYS = 7;
+const PRICES = { monthly: 4.99, yearly: 40 };
+const ONE_TIME_PROMO_CODES = ["sergio", "tomas", "marim"];
+
 // ---------------- API helpers ----------------
 
 async function callClaude(prompt) {
@@ -543,12 +714,14 @@ async function callClaude(prompt) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
-      max_tokens: 1000,
+      max_tokens: 1200,
       messages: [{ role: "user", content: prompt }],
     }),
   });
+  if (!response.ok) throw new Error("AI request failed: " + response.status);
   const data = await response.json();
   const text = (data.content || []).map((b) => (b.type === "text" ? b.text : "")).filter(Boolean).join("\n");
+  if (!text) throw new Error("Empty AI response");
   return text;
 }
 
@@ -563,15 +736,105 @@ function parseJSONLoose(text) {
   return JSON.parse(candidate);
 }
 
-async function loadData() {
+function formatPrice(n) {
+  if (n <= 0) return "0";
+  const fixed = n.toFixed(2);
+  return fixed.endsWith(".00") ? fixed.slice(0, -3) : fixed;
+}
+
+// ---------------- Account / auth helpers ----------------
+
+function simpleHash(str) {
+  // NOTE: this is a lightweight, non-cryptographic hash used only to avoid
+  // storing raw passwords as plain text in this prototype. It is NOT secure
+  // and should never be used for anything beyond a demo.
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return String(hash >>> 0);
+}
+
+function accountKey(username) { return `account_${username.trim().toLowerCase()}`; }
+
+async function loadAccount(username) {
   try {
-    const res = await window.storage.get("compass-data");
+    const res = await window.storage.get(accountKey(username), true);
     return res ? JSON.parse(res.value) : null;
   } catch (e) { return null; }
 }
-async function saveData(data) {
-  try { await window.storage.set("compass-data", JSON.stringify(data)); }
-  catch (e) { console.error("Save error", e); }
+async function saveAccount(account) {
+  try { await window.storage.set(accountKey(account.username), JSON.stringify(account), true); }
+  catch (e) { console.error("Save account error", e); }
+}
+async function loadSession() {
+  try { const res = await window.storage.get("compass-session", false); return res ? res.value : null; }
+  catch (e) { return null; }
+}
+async function saveSession(username) {
+  try { await window.storage.set("compass-session", username, false); } catch (e) {}
+}
+async function clearSession() {
+  try { await window.storage.delete("compass-session", false); } catch (e) {}
+}
+
+function newAccount(username, passwordHash) {
+  return {
+    username,
+    passwordHash,
+    createdAt: Date.now(),
+    trialStart: Date.now(),
+    subscription: { active: false, plan: null, price: null, promo: null },
+    usedPromos: [],
+    lang: "en",
+    profile: {},
+    plan: null,
+    stats: {},
+    events: [],
+  };
+}
+
+function trialDaysLeft(account) {
+  if (!account) return 0;
+  const trialStart = account.trialStart || Date.now();
+  const daysPassed = (Date.now() - trialStart) / (1000 * 60 * 60 * 24);
+  return Math.max(0, Math.ceil(TRIAL_DAYS - daysPassed));
+}
+function computeAccess(account) {
+  if (!account) return false;
+  if (account.subscription && account.subscription.active) return true;
+  return trialDaysLeft(account) > 0;
+}
+
+// ---------------- Strengths / weaknesses helpers ----------------
+
+function getWeakTopics(stats, disciplina, profile) {
+  const initial = (profile.dificuldadesPorDisciplina && profile.dificuldadesPorDisciplina[disciplina]) || [];
+  const s = stats[disciplina];
+  const fromHistory = [];
+  if (s && s.historico) {
+    s.historico.slice(-3).forEach((h) => { (h.topicos_fracos || h.topicos || []).forEach((tp) => fromHistory.push(tp)); });
+  }
+  return Array.from(new Set([...initial, ...fromHistory])).slice(0, 8);
+}
+function getStrongTopics(stats, disciplina) {
+  const s = stats[disciplina];
+  const arr = [];
+  if (s && s.historico) s.historico.slice(-3).forEach((h) => (h.topicos_fortes || []).forEach((tp) => arr.push(tp)));
+  return Array.from(new Set(arr)).slice(0, 8);
+}
+function getAggregateStrengthsWeaknesses(stats) {
+  const strong = {}, weak = {};
+  Object.keys(stats).forEach((subj) => {
+    const s = stats[subj];
+    if (!s || !s.historico) return;
+    s.historico.slice(-3).forEach((h) => {
+      (h.topicos_fortes || []).forEach((tp) => { strong[tp] = (strong[tp] || 0) + 1; });
+      (h.topicos_fracos || h.topicos || []).forEach((tp) => { weak[tp] = (weak[tp] || 0) + 1; });
+    });
+  });
+  const sortTop = (obj) => Object.keys(obj).sort((a, b) => obj[b] - obj[a]).slice(0, 6);
+  return { strengths: sortTop(strong), weaknesses: sortTop(weak) };
 }
 
 // ---------------- Small icons (primitive-based, no external icon set) ----------------
@@ -595,7 +858,6 @@ function IconCalendar({ size = 20 }) {
   );
 }
 function IconGear({ size = 20 }) {
-  const teeth = Array.from({ length: 8 });
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="4" />
@@ -636,7 +898,7 @@ function IconMapPin({ size = 14 }) {
 
 // ---------------- Compass rose visual ----------------
 
-function CompassRose({ subjects, stats, size = 170 }) {
+function CompassRose({ t, subjects, stats, size = 170 }) {
   const withStats = subjects.filter((s) => stats[s] && typeof stats[s].percentagem === "number");
   let angle = 0;
   let target = null;
@@ -667,14 +929,14 @@ function CompassRose({ subjects, stats, size = 170 }) {
         </g>
         <circle cx="100" cy="100" r="6" fill="var(--ink)" />
       </svg>
-      <div className="compass-caption">{target ? <>{"Focus"}: <strong>{target}</strong></> : null}</div>
+      <div className="compass-caption">{target ? <>{t.focus_label}: <strong>{target}</strong></> : t.take_test_focus}</div>
     </div>
   );
 }
 
 // ---------------- Top navigation ----------------
 
-function TopNav({ lang, t, view, setView }) {
+function TopNav({ lang, t, view, setView, username, onLogout }) {
   return (
     <div className="topnav">
       <div className="brand"><IconCompass size={22} /> {t.brand}</div>
@@ -682,6 +944,157 @@ function TopNav({ lang, t, view, setView }) {
         <button className={`nav-tab ${view === "dashboard" ? "active" : ""}`} onClick={() => setView("dashboard")}><IconCompass size={15} /> {t.nav_dashboard}</button>
         <button className={`nav-tab ${view === "agenda" ? "active" : ""}`} onClick={() => setView("agenda")}><IconCalendar size={15} /> {t.nav_agenda}</button>
         <button className={`nav-tab ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><IconGear size={15} /> {t.nav_settings}</button>
+      </div>
+      <div className="nav-account">
+        {username && <span className="nav-username">{username}</span>}
+        <button className="ghost-btn small" onClick={onLogout}>{t.logout}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Trial banner ----------------
+
+function TrialBanner({ t, account, onGoPaywall }) {
+  if (!account || (account.subscription && account.subscription.active)) return null;
+  const days = trialDaysLeft(account);
+  return (
+    <div className="trial-banner">
+      <span>{t.trial_days_left(days)}</span>
+      <button className="link-btn" onClick={onGoPaywall}>{t.choose_plan}</button>
+    </div>
+  );
+}
+
+// ---------------- Auth ----------------
+
+function AuthView({ t, lang, setLang, onAuth }) {
+  const [mode, setMode] = useState("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    setError("");
+    const uname = username.trim();
+    if (!uname || !password) { setError(t.login_error); return; }
+    setBusy(true);
+    try {
+      if (mode === "register") {
+        const existing = await loadAccount(uname);
+        if (existing) { setError(t.username_taken); setBusy(false); return; }
+        const account = newAccount(uname, simpleHash(password));
+        account.lang = lang;
+        await saveAccount(account);
+        await saveSession(uname);
+        onAuth(account);
+      } else {
+        const account = await loadAccount(uname);
+        if (!account || account.passwordHash !== simpleHash(password)) { setError(t.login_error); setBusy(false); return; }
+        await saveSession(uname);
+        onAuth(account);
+      }
+    } catch (e) {
+      setError(t.login_error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="auth-screen">
+      <div className="brand" style={{ justifyContent: "center", marginBottom: 18 }}><IconCompass size={26} /> {t.brand}</div>
+      <div className="auth-card">
+        <div className="auth-toggle">
+          <button className={`choice-btn ${mode === "login" ? "choice-selected" : ""}`} onClick={() => { setMode("login"); setError(""); }}>{t.login_title}</button>
+          <button className={`choice-btn ${mode === "register" ? "choice-selected" : ""}`} onClick={() => { setMode("register"); setError(""); }}>{t.register_title}</button>
+        </div>
+        <div className="field-group">
+          <label className="field-label">{t.username_label}</label>
+          <input className="input-field" value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
+        </div>
+        <div className="field-group">
+          <label className="field-label">{t.password_label}</label>
+          <input className="input-field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
+        </div>
+        {error && <div className="auth-error">{error}</div>}
+        <button className="primary-btn" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} onClick={submit} disabled={busy}>
+          {mode === "login" ? t.login_button : t.register_button}
+        </button>
+        <div className="lang-grid" style={{ marginTop: 18 }}>
+          {Object.keys(LANGS).map((code) => (
+            <button key={code} className={`choice-btn small ${lang === code ? "choice-selected" : ""}`} onClick={() => setLang(code)}>{LANGS[code]}</button>
+          ))}
+        </div>
+        <p className="auth-note">
+          {lang === "pt"
+            ? "Nota: este login é apenas uma demonstração — as credenciais não usam encriptação forte e não devem ser reutilizadas de outros serviços."
+            : "Note: this login is a lightweight demo — credentials aren't strongly encrypted, so please don't reuse a password from elsewhere."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Paywall ----------------
+
+function Paywall({ t, account, onSubscribe }) {
+  const [planSel, setPlanSel] = useState("monthly");
+  const [promo, setPromo] = useState("");
+  const [promoResult, setPromoResult] = useState(null);
+
+  function applyPromo() {
+    const code = promo.trim().toLowerCase();
+    if (!code) { setPromoResult(null); return; }
+    if (code === "arjun") { setPromoResult({ code, discount: 100 }); return; }
+    if (ONE_TIME_PROMO_CODES.includes(code)) {
+      if ((account.usedPromos || []).includes(code)) { setPromoResult({ error: t.promo_used }); return; }
+      setPromoResult({ code, discount: 25 });
+      return;
+    }
+    setPromoResult({ error: t.promo_invalid });
+  }
+
+  const base = PRICES[planSel];
+  const discount = promoResult && !promoResult.error ? promoResult.discount : 0;
+  const final = Math.round(base * (1 - discount / 100) * 100) / 100;
+  const isOneTime = !!(promoResult && !promoResult.error && ONE_TIME_PROMO_CODES.includes(promoResult.code));
+
+  function confirm() {
+    onSubscribe(planSel, final, promoResult && !promoResult.error ? promoResult.code : null, isOneTime);
+  }
+
+  return (
+    <div className="paywall-screen">
+      <h1 className="dash-title">{t.paywall_title}</h1>
+      <p className="dash-sub">{t.paywall_sub}</p>
+      <div className="plan-grid">
+        <div className={`plan-card ${planSel === "monthly" ? "selected" : ""}`} onClick={() => { setPlanSel("monthly"); }}>
+          <div className="eyebrow">{t.plan_monthly}</div>
+          <div className="plan-price">€{formatPrice(PRICES.monthly)}<span style={{ fontSize: 13, color: "var(--muted)" }}>{t.per_month}</span></div>
+        </div>
+        <div className={`plan-card ${planSel === "yearly" ? "selected" : ""}`} onClick={() => { setPlanSel("yearly"); }}>
+          <div className="eyebrow">{t.plan_yearly}</div>
+          <div className="plan-price">€{formatPrice(PRICES.yearly)}<span style={{ fontSize: 13, color: "var(--muted)" }}>{t.per_year}</span></div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="field-label">{t.promo_label}</div>
+        <div className="promo-row">
+          <input className="input-field" value={promo} onChange={(e) => { setPromo(e.target.value); setPromoResult(null); }} onKeyDown={(e) => e.key === "Enter" && applyPromo()} />
+          <button className="secondary-btn" onClick={applyPromo}>{t.promo_apply}</button>
+        </div>
+        {promoResult && promoResult.error && <div className="promo-msg-err">{promoResult.error}</div>}
+        {promoResult && !promoResult.error && <div className="promo-msg-ok">{t.promo_success} (-{promoResult.discount}%)</div>}
+
+        <div style={{ marginTop: 18 }}>
+          {discount > 0 && <span className="plan-old-price">€{formatPrice(base)}</span>}
+          <span className="plan-price">{final <= 0 ? t.free_forever : `€${formatPrice(final)}`}</span>
+        </div>
+        <button className="primary-btn" style={{ marginTop: 10 }} onClick={confirm}>{t.subscribe_now}</button>
+        <p className="demo-note">{t.demo_payment_note}</p>
       </div>
     </div>
   );
@@ -714,7 +1127,7 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
   async function handleNaoSei() {
     setExplainLoading(true); setExplain("");
     try {
-      const contexto = key === "tempoPorDisciplina" ? ` about the subject "${disciplinas[subIndex]}"` : "";
+      const contexto = (key === "tempoPorDisciplina" || key === "dificuldades") ? ` about the subject "${disciplinas[subIndex]}"` : "";
       const prompt = `A student is filling out a form and didn't understand this question: "${stepText.label}"${contexto}. Explain in 2-3 short, simple, friendly sentences what the question is asking, and give one example answer. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with plain text only, no JSON, no markdown.`;
       const text = await callClaude(prompt);
       setExplain(text.trim());
@@ -741,6 +1154,23 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
     setTagInput("");
   }
   function removeTag(tg) { setAns("disciplinas", (answers.disciplinas || []).filter((x) => x !== tg)); }
+
+  function addDificuldade() {
+    const tg = tagInput.trim();
+    if (!tg || disciplinas.length === 0) return;
+    const cur = { ...(answers.dificuldadesPorDisciplina || {}) };
+    const subj = disciplinas[subIndex];
+    const list = cur[subj] || [];
+    if (!list.includes(tg)) cur[subj] = [...list, tg];
+    setAns("dificuldadesPorDisciplina", cur);
+    setTagInput("");
+  }
+  function removeDificuldade(tg) {
+    const cur = { ...(answers.dificuldadesPorDisciplina || {}) };
+    const subj = disciplinas[subIndex];
+    cur[subj] = (cur[subj] || []).filter((x) => x !== tg);
+    setAns("dificuldadesPorDisciplina", cur);
+  }
 
   return (
     <div className="onboard-screen">
@@ -791,6 +1221,23 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
             </div>
           </div>
         )}
+        {type === "perDisciplinaTags" && disciplinas.length > 0 && (
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 8 }}>{disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</div>
+            <input ref={inputRef} className="input-field" type="text" placeholder={stepText.placeholder} value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDificuldade(); } }} />
+            <div className="tag-row">
+              {((answers.dificuldadesPorDisciplina || {})[disciplinas[subIndex]] || []).map((tg) => (
+                <span key={tg} className="tag-chip">{tg}<button className="tag-remove" onClick={() => removeDificuldade(tg)}>×</button></span>
+              ))}
+            </div>
+            <div className="nav-row" style={{ marginTop: 10 }}>
+              {subIndex > 0 && (<button className="link-btn" onClick={() => setSubIndex(subIndex - 1)}>{t.prev_subject}</button>)}
+              {subIndex < disciplinas.length - 1 && (<button className="link-btn" onClick={() => setSubIndex(subIndex + 1)}>{t.next} →</button>)}
+            </div>
+          </div>
+        )}
         {type === "perDisciplina" && disciplinas.length > 0 && (
           <div>
             <div className="eyebrow" style={{ marginBottom: 8 }}>{disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</div>
@@ -816,7 +1263,8 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
           <button className="ghost-btn" onClick={handleNaoSei} disabled={explainLoading}><IconHelp size={15} /> {t.dont_know}</button>
           <div className="nav-right">
             {i > 0 && (<button className="secondary-btn" onClick={back}><IconArrowLeft size={15} /> {t.back}</button>)}
-            {optional && !answers[key] && type !== "perDisciplina" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
+            {optional && !answers[key] && type !== "perDisciplina" && type !== "perDisciplinaTags" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
+            {type === "perDisciplinaTags" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
             <button className="primary-btn" onClick={next} disabled={!canAdvance()}>
               {i === STEP_ORDER.length - 1 ? t.create_plan : t.next} <IconArrowRight size={15} />
             </button>
@@ -839,7 +1287,9 @@ function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStat
   async function generate() {
     setLoading(true);
     try {
-      const prompt = `A student in ${profile.ano || "an unspecified"} grade, following the "${profile.curriculo || "standard"}" curriculum at "${profile.escola || "their school"}", needs an overview of the subject "${subject}". Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"topicos_chave": ["...","...","..."], "porque_importa": "1-2 sentences", "como_estudar": "2-3 sentences with concrete study tips for this subject"}`;
+      const dificuldades = (profile.dificuldadesPorDisciplina && profile.dificuldadesPorDisciplina[subject]) || [];
+      const dificuldadesTxt = dificuldades.length > 0 ? ` The student has previously mentioned struggling with: ${dificuldades.join(", ")}.` : "";
+      const prompt = `A student in ${profile.ano || "an unspecified"} grade, following the "${profile.curriculo || "standard"}" curriculum at "${profile.escola || "their school"}", needs an overview of the subject "${subject}".${dificuldadesTxt} Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"topicos_chave": ["...","...","..."], "porque_importa": "1-2 sentences", "como_estudar": "2-3 sentences with concrete study tips for this subject"}`;
       const text = await callClaude(prompt);
       const json = parseJSONLoose(text);
       setOverview(json);
@@ -852,6 +1302,8 @@ function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStat
   }
 
   const historico = s.historico || [];
+  const strong = getStrongTopics(stats, subject);
+  const weak = getWeakTopics(stats, subject, profile);
 
   return (
     <div className="page-wrap">
@@ -871,6 +1323,28 @@ function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStat
             <button className="link-btn" onClick={generate}>{t.refresh_overview}</button>
           </>
         )}
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">{t.strengths_weaknesses_title}</div>
+        <div className="sw-grid" style={{ marginTop: 10 }}>
+          <div>
+            <div className="eyebrow" style={{ fontSize: 11 }}>{t.strengths_title}</div>
+            <div className="tag-row">
+              {strong.length === 0
+                ? <p className="resumo-text" style={{ fontSize: 13 }}>{t.no_strengths_yet}</p>
+                : strong.map((tp, idx) => (<span key={idx} className="tag-chip strength-chip">{tp}</span>))}
+            </div>
+          </div>
+          <div>
+            <div className="eyebrow" style={{ fontSize: 11 }}>{t.weaknesses_title}</div>
+            <div className="tag-row">
+              {weak.length === 0
+                ? <p className="resumo-text" style={{ fontSize: 13 }}>{t.no_weaknesses_yet}</p>
+                : weak.map((tp, idx) => (<span key={idx} className="tag-chip weakness-chip">{tp}</span>))}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="card">
@@ -899,6 +1373,7 @@ function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStat
 
 function Dashboard({ lang, t, profile, plan, stats, onStartTest, onOpenSubject, onRegeneratePlan, planLoading }) {
   const disciplinas = profile.disciplinas || [];
+  const sw = getAggregateStrengthsWeaknesses(stats);
   return (
     <div className="page-wrap">
       <div className="dash-header">
@@ -907,7 +1382,7 @@ function Dashboard({ lang, t, profile, plan, stats, onStartTest, onOpenSubject, 
           <h1 className="dash-title">{t.brand}</h1>
           <p className="dash-sub">{profile.ano} · {profile.escola}</p>
         </div>
-        <CompassRose subjects={disciplinas} stats={stats} />
+        <CompassRose t={t} subjects={disciplinas} stats={stats} />
       </div>
 
       {plan && (
@@ -915,6 +1390,22 @@ function Dashboard({ lang, t, profile, plan, stats, onStartTest, onOpenSubject, 
           <div className="eyebrow">{t.your_plan}</div>
           <p className="resumo-text">{plan.resumo}</p>
           <button className="link-btn" onClick={onRegeneratePlan} disabled={planLoading}>{planLoading ? t.updating : t.generate_new_plan}</button>
+        </div>
+      )}
+
+      {(sw.strengths.length > 0 || sw.weaknesses.length > 0) && (
+        <div className="card">
+          <div className="eyebrow">{t.strengths_weaknesses_title}</div>
+          <div className="sw-grid" style={{ marginTop: 10 }}>
+            <div>
+              <div className="eyebrow" style={{ fontSize: 11 }}>{t.strengths_title}</div>
+              <div className="tag-row">{sw.strengths.map((tp, idx) => (<span key={idx} className="tag-chip strength-chip">{tp}</span>))}</div>
+            </div>
+            <div>
+              <div className="eyebrow" style={{ fontSize: 11 }}>{t.weaknesses_title}</div>
+              <div className="tag-row">{sw.weaknesses.map((tp, idx) => (<span key={idx} className="tag-chip weakness-chip">{tp}</span>))}</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -965,7 +1456,7 @@ function Dashboard({ lang, t, profile, plan, stats, onStartTest, onOpenSubject, 
 
 // ---------------- Test ----------------
 
-function TestView({ lang, t, config, profile, onFinish, onCancel }) {
+function TestView({ lang, t, config, profile, previousQuestions, weakTopics, onFinish, onCancel }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -980,11 +1471,21 @@ function TestView({ lang, t, config, profile, onFinish, onCancel }) {
   async function generate() {
     setLoading(true); setError("");
     try {
-      const n = config.tipo === "mini" ? 5 : 10;
-      const prompt = `Create a ${n}-question multiple-choice test on the subject "${config.disciplina}", suitable for a student in ${profile.ano} grade at "${profile.escola}", following the "${profile.curriculo}" curriculum. Match the level and style typical of a real school test for that grade in that curriculum. Each question must have exactly 4 options and only one correct answer. Explanations must be at most 20 words. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON, no text before or after, in this exact format: {"perguntas":[{"pergunta":"...","opcoes":["...","...","...","..."],"resposta_correta":0,"explicacao":"..."}]}`;
+      let n = config.tipo === "mini" ? 5 : 10;
+      const hasWeak = weakTopics && weakTopics.length > 0;
+      if (hasWeak) n = config.tipo === "mini" ? Math.min(7, n + 2) : Math.min(14, n + 3);
+      const avoidTxt = (previousQuestions && previousQuestions.length > 0)
+        ? ` Do not repeat any of these previously used questions — write completely new ones with different wording and, where possible, different specific examples: ${JSON.stringify(previousQuestions.slice(-25))}.`
+        : "";
+      const weakTxt = hasWeak
+        ? ` The student has previously struggled with these topics: ${weakTopics.join(", ")}. Dedicate at least half of the questions to these topics, at a level that helps the student practice and improve.`
+        : "";
+      const prompt = `Create a ${n}-question multiple-choice test on the subject "${config.disciplina}", suitable for a student in ${profile.ano} grade at "${profile.escola}", following the "${profile.curriculo}" curriculum. Match the level and style typical of a real school test for that grade in that curriculum. Each question must have exactly 4 options and only one correct answer. Explanations must be at most 20 words.${weakTxt}${avoidTxt} Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON, no text before or after, in this exact format: {"perguntas":[{"pergunta":"...","opcoes":["...","...","...","..."],"resposta_correta":0,"explicacao":"..."}]}`;
       const text = await callClaude(prompt);
       const json = parseJSONLoose(text);
-      setQuestions(json.perguntas || []);
+      const perguntas = json.perguntas || [];
+      if (perguntas.length === 0) throw new Error("No questions generated");
+      setQuestions(perguntas);
     } catch (e) { setError(t.could_not_generate); }
     finally { setLoading(false); }
   }
@@ -1063,12 +1564,12 @@ function ResultView({ lang, t, config, answers, profile, onBack }) {
     setLoading(true);
     try {
       const resumo = answers.map((a) => `- ${a.pergunta}: ${a.naoSei ? "didn't know" : a.correta ? "correct" : "incorrect"}`).join("\n");
-      const prompt = `A student in ${profile.ano} grade took a test on "${config.disciplina}" and scored ${pct}%. Answers:\n${resumo}\nWrite brief, encouraging feedback (3-4 sentences) about the performance, and identify up to 3 concrete topics to improve. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY JSON: {"feedback":"...","topicos_para_melhorar":["...","..."]}`;
+      const prompt = `A student in ${profile.ano} grade took a test on "${config.disciplina}" and scored ${pct}%. Answers:\n${resumo}\nWrite brief, encouraging feedback (3-4 sentences) about the performance, and identify up to 3 concrete topics the student did well in and up to 3 concrete topics to improve. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY JSON: {"feedback":"...","pontos_fortes":["...","..."],"topicos_para_melhorar":["...","..."]}`;
       const text = await callClaude(prompt);
       const json = parseJSONLoose(text);
       setFeedback(json);
     } catch (e) {
-      setFeedback({ feedback: "Well done for finishing the test! Keep practicing to improve even more.", topicos_para_melhorar: [] });
+      setFeedback({ feedback: "Well done for finishing the test! Keep practicing to improve even more.", pontos_fortes: [], topicos_para_melhorar: [] });
     } finally { setLoading(false); }
   }
 
@@ -1081,9 +1582,14 @@ function ResultView({ lang, t, config, answers, profile, onBack }) {
         {loading ? <p>{t.feedback_loading}</p> : (
           <>
             <p className="feedback-text">{feedback.feedback}</p>
+            {feedback.pontos_fortes && feedback.pontos_fortes.length > 0 && (
+              <div className="tag-row" style={{ justifyContent: "center" }}>
+                {feedback.pontos_fortes.map((tp, idx) => (<span key={idx} className="tag-chip strength-chip">{tp}</span>))}
+              </div>
+            )}
             {feedback.topicos_para_melhorar && feedback.topicos_para_melhorar.length > 0 && (
               <div className="tag-row" style={{ justifyContent: "center" }}>
-                {feedback.topicos_para_melhorar.map((tp, idx) => (<span key={idx} className="tag-chip topic-chip">{tp}</span>))}
+                {feedback.topicos_para_melhorar.map((tp, idx) => (<span key={idx} className="tag-chip weakness-chip">{tp}</span>))}
               </div>
             )}
           </>
@@ -1201,7 +1707,7 @@ function Agenda({ lang, t, profile, plan, events, setEvents, persistEvents }) {
 
 // ---------------- Settings ----------------
 
-function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onReset }) {
+function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onReset, account, onGoPaywall, onLogout }) {
   const [draft, setDraft] = useState(profile);
   const [tagInput, setTagInput] = useState("");
   const [saved, setSaved] = useState(false);
@@ -1223,6 +1729,8 @@ function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onRes
     setSaved(true);
   }
 
+  const isSubscribed = !!(account && account.subscription && account.subscription.active);
+
   return (
     <div className="page-wrap" style={{ paddingBottom: 40 }}>
       <h1 className="dash-title" style={{ marginBottom: 18 }}>{t.settings_title}</h1>
@@ -1235,6 +1743,18 @@ function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onRes
           ))}
         </div>
       </div>
+
+      {account && (
+        <div className="card">
+          <div className="eyebrow">{t.manage_subscription}</div>
+          <p className="resumo-text">
+            {isSubscribed
+              ? t.active_plan_text(account.subscription.plan === "monthly" ? t.plan_monthly : t.plan_yearly, formatPrice(account.subscription.price))
+              : t.trial_active_text(trialDaysLeft(account))}
+          </p>
+          {!isSubscribed && (<button className="secondary-btn" onClick={onGoPaywall}>{t.view_plans}</button>)}
+        </div>
+      )}
 
       <div className="card">
         <div className="eyebrow" style={{ marginBottom: 12 }}>{t.profile_section}</div>
@@ -1263,6 +1783,10 @@ function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onRes
         </div>
       </div>
 
+      <div className="card">
+        <button className="secondary-btn" onClick={onLogout}>{t.logout}</button>
+      </div>
+
       <div className="danger-zone">
         <div className="eyebrow" style={{ color: "var(--error)" }}>{t.danger_zone}</div>
         {!confirmingReset ? (
@@ -1284,8 +1808,9 @@ function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onRes
 // ---------------- Main App ----------------
 
 function App() {
-  const [lang, setLang] = useState("en");
+  const [lang, setLangState] = useState("en");
   const [view, setView] = useState("loading");
+  const [account, setAccount] = useState(null);
   const [answers, setAnswers] = useState({});
   const [plan, setPlan] = useState(null);
   const [stats, setStats] = useState({});
@@ -1293,111 +1818,196 @@ function App() {
   const [planLoading, setPlanLoading] = useState(false);
   const [testConfig, setTestConfig] = useState(null);
   const [testAnswers, setTestAnswers] = useState(null);
+  const [testQuestionsAsked, setTestQuestionsAsked] = useState([]);
   const [activeSubject, setActiveSubject] = useState(null);
 
   const t = T[lang];
+  const PROTECTED_VIEWS = ["dashboard", "agenda", "subject", "test", "result"];
 
   useEffect(() => {
     (async () => {
-      const data = await loadData();
-      if (data && data.profile && data.profile.nome) {
-        setAnswers(data.profile);
-        setPlan(data.plan || null);
-        setStats(data.stats || {});
-        setEvents(data.events || []);
-        setLang(data.lang || "en");
-        setView("dashboard");
-      } else {
-        setView("onboarding");
+      const sessionUser = await loadSession();
+      if (sessionUser) {
+        const acc = await loadAccount(sessionUser);
+        if (acc) { await afterAuth(acc); return; }
       }
+      setView("auth");
     })();
   }, []);
 
-  async function persist(partial) {
-    const base = { profile: answers, plan, stats, events, lang };
-    const merged = { ...base, ...partial };
-    await saveData(merged);
+  async function afterAuth(acc) {
+    setAccount(acc);
+    setAnswers(acc.profile || {});
+    setPlan(acc.plan || null);
+    setStats(acc.stats || {});
+    setEvents(acc.events || []);
+    setLangState(acc.lang || "en");
+    if (acc.profile && acc.profile.nome) {
+      setView(computeAccess(acc) ? "dashboard" : "paywall");
+    } else {
+      setView("onboarding");
+    }
   }
 
-  async function gerarPlano(profile) {
+  function setLang(l) {
+    setLangState(l);
+    persist({ lang: l });
+  }
+
+  function requestView(v) {
+    if (PROTECTED_VIEWS.includes(v) && account && !computeAccess(account)) { setView("paywall"); return; }
+    setView(v);
+  }
+
+  async function persist(partial) {
+    if (!account) return;
+    const merged = {
+      ...account,
+      profile: partial.profile !== undefined ? partial.profile : answers,
+      plan: partial.plan !== undefined ? partial.plan : plan,
+      stats: partial.stats !== undefined ? partial.stats : stats,
+      events: partial.events !== undefined ? partial.events : events,
+      lang: partial.lang !== undefined ? partial.lang : lang,
+    };
+    setAccount(merged);
+    await saveAccount(merged);
+  }
+
+  async function gerarPlano(profileData) {
     setPlanLoading(true);
     try {
-      const prompt = `Create a weekly study plan for a student with this data: ${JSON.stringify(profile)}. Take into account how much they already study per day and per subject, their grade and curriculum. Be realistic and don't overload the student. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"resumo":"1-2 sentences about the overall strategy","plano_semanal":[{"dia":"Monday","blocos":[{"disciplina":"...","duracao":"30 min","foco":"..."}]}],"dicas":["...","...","..."]}. Include 5 days (Monday to Friday), with day names translated into ${LANG_NAME_FOR_AI[lang]}.`;
+      const prompt = `Create a weekly study plan for a student with this data: ${JSON.stringify(profileData)}. Take into account how much they already study per day and per subject, their grade and curriculum, and especially any specific difficulty topics they mentioned per subject (dificuldadesPorDisciplina) — give those subjects more time and more targeted focus. Be realistic and don't overload the student. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"resumo":"1-2 sentences about the overall strategy","plano_semanal":[{"dia":"Monday","blocos":[{"disciplina":"...","duracao":"30 min","foco":"..."}]}],"dicas":["...","...","..."]}. Include 5 days (Monday to Friday), with day names translated into ${LANG_NAME_FOR_AI[lang]}.`;
       const text = await callClaude(prompt);
       const json = parseJSONLoose(text);
       setPlan(json);
-      await persist({ profile, plan: json });
+      await persist({ profile: profileData, plan: json });
     } catch (e) {
       setPlan({ resumo: "I couldn't generate the plan right now — try again anytime.", plano_semanal: [], dicas: [] });
     } finally { setPlanLoading(false); }
   }
 
   async function handleOnboardingFinish() {
-    setView("dashboard");
     await persist({ profile: answers });
+    requestView(computeAccess(account) ? "dashboard" : "paywall");
     gerarPlano(answers);
   }
 
-  function startTest(disciplina, tipo) { setTestConfig({ disciplina, tipo }); setActiveSubject(null); setView("test"); }
-  function handleTestFinish(finalAnswers) { setTestAnswers(finalAnswers); setView("result"); }
+  function startTest(disciplina, tipo) { setTestConfig({ disciplina, tipo }); setActiveSubject(null); requestView("test"); }
+  function handleTestFinish(finalAnswers, questions) { setTestAnswers(finalAnswers); setTestQuestionsAsked(questions || []); requestView("result"); }
 
   async function handleResultBack(pct, feedback) {
     const nextStats = { ...stats };
     const key = testConfig.disciplina;
     const historico = (nextStats[key] && nextStats[key].historico) || [];
+    const askedPrev = (nextStats[key] && nextStats[key].askedQuestions) || [];
+    const newAskedTexts = (testQuestionsAsked || []).map((q) => q.pergunta).filter(Boolean);
     nextStats[key] = {
       ...(nextStats[key] || {}),
       percentagem: pct,
-      historico: [...historico, { data: new Date().toISOString().slice(0, 10), tipo: testConfig.tipo, percentagem: pct, topicos: feedback ? feedback.topicos_para_melhorar : [] }],
+      historico: [...historico, {
+        data: new Date().toISOString().slice(0, 10),
+        tipo: testConfig.tipo,
+        percentagem: pct,
+        topicos_fortes: feedback ? (feedback.pontos_fortes || []) : [],
+        topicos_fracos: feedback ? (feedback.topicos_para_melhorar || []) : [],
+      }],
+      askedQuestions: [...askedPrev, ...newAskedTexts].slice(-60),
     };
     setStats(nextStats);
     await persist({ stats: nextStats });
-    setView("dashboard");
+    requestView("dashboard");
   }
 
   async function handleReset() {
-    await window.storage.delete("compass-data").catch(() => {});
+    const nextAccount = { ...account, profile: {}, plan: null, stats: {}, events: [] };
+    setAccount(nextAccount);
+    await saveAccount(nextAccount);
     setAnswers({}); setPlan(null); setStats({}); setEvents([]);
     setView("onboarding");
   }
 
-  const showNav = ["dashboard", "agenda", "settings", "subject"].includes(view);
+  async function handleSubscribe(planKey, finalPrice, promoCode, isOneTime) {
+    const nextAccount = {
+      ...account,
+      subscription: { active: true, plan: planKey, price: finalPrice, promo: promoCode || null },
+      usedPromos: isOneTime && promoCode ? [...(account.usedPromos || []), promoCode] : (account.usedPromos || []),
+    };
+    setAccount(nextAccount);
+    await saveAccount(nextAccount);
+    setView("dashboard");
+  }
+
+  async function handleLogout() {
+    await clearSession();
+    setAccount(null); setAnswers({}); setPlan(null); setStats({}); setEvents([]);
+    setView("auth");
+  }
+
+  const showNav = ["dashboard", "agenda", "settings", "subject", "paywall"].includes(view);
+  const showTrialBanner = ["dashboard", "agenda", "subject"].includes(view) && account && computeAccess(account) && !(account.subscription && account.subscription.active);
 
   return (
     <div className="app-root">
-      {showNav && <TopNav lang={lang} t={t} view={view === "subject" ? "dashboard" : view} setView={setView} />}
+      {showNav && (
+        <TopNav lang={lang} t={t} view={view === "subject" ? "dashboard" : view} setView={requestView}
+          username={account && account.username} onLogout={handleLogout} />
+      )}
 
       {view === "loading" && (<div className="center-screen"><IconCompass size={32} /><p>{t.opening}</p></div>)}
+
+      {view === "auth" && (
+        <AuthView t={t} lang={lang} setLang={setLangState} onAuth={afterAuth} />
+      )}
+
+      {view === "paywall" && account && (
+        <>
+          <div className="page-wrap"><TrialBanner t={t} account={account} onGoPaywall={() => {}} /></div>
+          <Paywall t={t} account={account} onSubscribe={handleSubscribe} />
+        </>
+      )}
 
       {view === "onboarding" && (
         <Onboarding lang={lang} t={t} answers={answers} setAnswers={setAnswers} onFinish={handleOnboardingFinish} />
       )}
 
-      {view === "dashboard" && (
+      {view === "dashboard" && account && (
+        <div className="page-wrap"><TrialBanner t={t} account={account} onGoPaywall={() => setView("paywall")} /></div>
+      )}
+      {view === "dashboard" && account && (
         <Dashboard lang={lang} t={t} profile={answers} plan={plan} stats={stats} planLoading={planLoading}
           onStartTest={startTest}
-          onOpenSubject={(d) => { setActiveSubject(d); setView("subject"); }}
+          onOpenSubject={(d) => { setActiveSubject(d); requestView("subject"); }}
           onRegeneratePlan={() => gerarPlano(answers)} />
       )}
 
-      {view === "subject" && activeSubject && (
-        <SubjectDetail lang={lang} t={t} subject={activeSubject} profile={answers} stats={stats} setStats={setStats}
-          persistStats={(next) => persist({ stats: next })}
-          onBack={() => setView("dashboard")} onStartTest={startTest} />
+      {view === "subject" && activeSubject && account && (
+        <>
+          <div className="page-wrap"><TrialBanner t={t} account={account} onGoPaywall={() => setView("paywall")} /></div>
+          <SubjectDetail lang={lang} t={t} subject={activeSubject} profile={answers} stats={stats} setStats={setStats}
+            persistStats={(next) => persist({ stats: next })}
+            onBack={() => requestView("dashboard")} onStartTest={startTest} />
+        </>
       )}
 
-      {view === "agenda" && (
-        <Agenda lang={lang} t={t} profile={answers} plan={plan} events={events} setEvents={setEvents}
-          persistEvents={(next) => persist({ events: next })} />
+      {view === "agenda" && account && (
+        <>
+          <div className="page-wrap"><TrialBanner t={t} account={account} onGoPaywall={() => setView("paywall")} /></div>
+          <Agenda lang={lang} t={t} profile={answers} plan={plan} events={events} setEvents={setEvents}
+            persistEvents={(next) => persist({ events: next })} />
+        </>
       )}
 
       {view === "settings" && (
-        <Settings lang={lang} setLang={(l) => { setLang(l); persist({ lang: l }); }} t={t} profile={answers} setProfile={setAnswers}
-          persistProfile={(next) => persist({ profile: next })} onReset={handleReset} />
+        <Settings lang={lang} setLang={setLang} t={t} profile={answers} setProfile={setAnswers}
+          persistProfile={(next) => persist({ profile: next })} onReset={handleReset}
+          account={account} onGoPaywall={() => setView("paywall")} onLogout={handleLogout} />
       )}
 
       {view === "test" && testConfig && (
-        <TestView lang={lang} t={t} config={testConfig} profile={answers} onFinish={handleTestFinish} onCancel={() => setView("dashboard")} />
+        <TestView lang={lang} t={t} config={testConfig} profile={answers}
+          previousQuestions={(stats[testConfig.disciplina] && stats[testConfig.disciplina].askedQuestions) || []}
+          weakTopics={getWeakTopics(stats, testConfig.disciplina, answers)}
+          onFinish={handleTestFinish} onCancel={() => requestView("dashboard")} />
       )}
 
       {view === "result" && testConfig && testAnswers && (
@@ -1412,6 +2022,3 @@ root.render(<App />);
 </script>
 </body>
 </html>
-
-
-
