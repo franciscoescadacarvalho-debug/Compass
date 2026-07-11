@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Compass — Study Helper</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --ink: #1E2A44;
+    --paper: #EEF2F6;
+    --card: #FFFFFF;
+    --gold: #D9A441;
+    --teal: #2F8F82;
+    --error: #C24C3D;
+    --line: #D7DEE6;
+    --muted: #6B7688;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: 'Work Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  #root { min-height: 100vh; }
+  h1, h2 { font-family: 'Fraunces', serif; margin: 0; }
+  button { font-family: 'Work Sans', sans-serif; }
+  .app-root { min-height: 100vh; padding-bottom: 60px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .optional-tag { color: var(--gold); }
+
+  /* Top nav */
+  .topnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; background: var(--card); border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; }
+  .brand svg { color: var(--gold); }
+  .nav-tabs { display: flex; gap: 4px; background: var(--paper); padding: 4px; border-radius: 12px; }
+  .nav-tab {
+    display: flex; align-items: center; gap: 6px; border: none; background: none; cursor: pointer;
+    padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+  .nav-tab.active { background: var(--ink); color: var(--paper); }
+
+  .page-wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 0; }
+
+  /* Onboarding */
+  .onboard-screen { max-width: 560px; margin: 0 auto; padding: 40px 20px 0; }
+  .progress-row { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dot-active { background: var(--gold); width: 20px; border-radius: 4px; }
+  .dot-done { background: var(--teal); }
+  .onboard-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 32px 28px; }
+  .question { font-size: 26px; font-weight: 600; margin: 8px 0 20px; line-height: 1.25; }
+  .input-field {
+    width: 100%; font-family: 'Work Sans', sans-serif; font-size: 16px; padding: 12px 14px;
+    border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); outline: none;
+  }
+  .input-field:focus { border-color: var(--gold); }
+  .choice-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .choice-btn {
+    padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--line);
+    background: var(--card); color: var(--ink); cursor: pointer; font-size: 14px;
+  }
+  .choice-btn:hover { border-color: var(--gold); }
+  .choice-selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tag-chip {
+    display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border: 1px solid var(--line);
+    padding: 6px 10px; border-radius: 999px; font-size: 13px;
+  }
+  .topic-chip { background: #FBEFDD; border-color: var(--gold); }
+  .tag-remove { border: none; background: none; cursor: pointer; font-size: 15px; color: var(--muted); line-height: 1; }
+  .link-btn {
+    border: none; background: none; color: var(--teal); cursor: pointer; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; font-weight: 600;
+  }
+  .explain-box {
+    margin-top: 16px; background: #F3F6F1; border-left: 3px solid var(--teal);
+    padding: 12px 14px; border-radius: 8px; font-size: 14px; color: var(--ink);
+  }
+  .explain-loading { color: var(--muted); font-style: italic; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; gap: 10px; flex-wrap: wrap; }
+  .nav-right { display: flex; gap: 10px; margin-left: auto; }
+  .primary-btn, .secondary-btn, .ghost-btn {
+    font-weight: 600; font-size: 14px; border-radius: 10px; padding: 10px 18px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; border: none;
+  }
+  .primary-btn { background: var(--ink); color: var(--paper); }
+  .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .secondary-btn { background: var(--card); color: var(--ink); border: 1.5px solid var(--line); }
+  .ghost-btn { background: none; color: var(--muted); border: 1.5px dashed var(--line); }
+  .small { padding: 7px 12px; font-size: 13px; }
+  .danger-btn { background: var(--error); color: #fff; }
+
+  /* Dashboard */
+  .dash-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+  .dash-title { font-size: 30px; margin-top: 4px; }
+  .dash-sub { color: var(--muted); margin: 4px 0 0; }
+  .compass-wrap { text-align: center; flex-shrink: 0; }
+  .compass-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; }
+  .compass-caption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; }
+  .resumo-text { font-size: 15px; line-height: 1.5; margin: 8px 0 10px; }
+  .week-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .day-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .day-label { font-family: 'Fraunces', serif; font-weight: 600; margin-bottom: 8px; }
+  .block { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+  .block:first-of-type { border-top: none; margin-top: 0; }
+  .block-disc { font-weight: 600; font-size: 14px; }
+  .block-meta { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin: 2px 0; }
+  .block-foco { font-size: 12px; color: var(--muted); }
+  .dicas-list { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.6; }
+  .subject-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+  .subject-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; cursor: pointer; transition: border-color .15s; }
+  .subject-card:hover { border-color: var(--gold); }
+  .subject-name { font-weight: 600; font-size: 15px; }
+  .subject-pct { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--gold); margin: 6px 0 2px; }
+  .subject-history { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .subject-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+  /* Subject detail */
+  .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .history-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 8px 0; font-size: 13px; }
+  .history-row:last-child { border-bottom: none; }
+
+  /* Test */
+  .option-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    text-align: left; font-size: 15px; padding: 12px 16px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: var(--card); color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--gold); }
+  .option-correct { background: #EAF4F1; border-color: var(--teal); color: var(--teal); }
+  .option-wrong { background: #FBEDEA; border-color: var(--error); color: var(--error); }
+
+  /* Center screens */
+  .center-screen { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; color: var(--muted); padding: 20px; }
+  .spin { animation: spin 1.4s linear infinite; color: var(--gold); }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .result-card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 36px; max-width: 460px; }
+  .result-pct { font-family: 'Fraunces', serif; font-size: 56px; color: var(--gold); }
+  .result-count { color: var(--muted); margin-top: -6px; }
+  .feedback-text { font-size: 15px; line-height: 1.5; margin: 14px 0; color: var(--ink); }
+
+  /* Settings */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .settings-grid { grid-template-columns: 1fr; } }
+  .field-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+  .field-group { margin-bottom: 16px; }
+  .lang-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .save-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  .saved-msg { color: var(--teal); font-size: 13px; font-weight: 600; }
+  .danger-zone { border: 1.5px dashed var(--error); border-radius: 14px; padding: 18px 20px; margin-top: 10px; }
+
+  /* Agenda */
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav-btn { border: 1.5px solid var(--line); background: var(--card); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; padding-bottom: 4px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--line); background: var(--card);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 13px; position: relative; gap: 3px;
+  }
+  .cal-day.empty { border: none; background: none; cursor: default; }
+  .cal-day.today { border-color: var(--gold); border-width: 2px; }
+  .cal-day.selected { background: var(--ink); color: var(--paper); }
+  .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+  .event-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 10px 0; gap: 10px; }
+  .event-item:last-child { border-bottom: none; }
+  .event-date-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .event-title { font-weight: 600; font-size: 14px; }
+  .event-subject { font-size: 12px; color: var(--muted); }
+  .del-btn { border: none; background: none; color: var(--error); cursor: pointer; font-size: 16px; padding: 4px 8px; }
+  .add-event-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-top: 6px; }
+  @media (max-width: 720px) { .add-event-form { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// ---------------- i18n ----------------
+
+const LANGS = {
+  en: "English",
+  pt: "Português",
+  es: "Español",
+  fr: "Français",
+};
+
+const T = {
+  en: {
+    brand: "Compass",
+    nav_dashboard: "Dashboard", nav_agenda: "Agenda", nav_settings: "Settings",
+    grade_suffix: "th Grade",
+    steps: {
+      nome: { label: "What's your name?", placeholder: "Your name" },
+      idade: { label: "How old are you?", placeholder: "e.g. 14" },
+      escola: { label: "What's the name of your school?", placeholder: "School name" },
+      ano: { label: "What grade are you in?" },
+      curriculo: { label: "What curriculum are you following?", placeholder: "e.g. National, Cambridge, IB…" },
+      disciplinas: { label: "Which subjects do you need help with?", placeholder: "Type a subject and press Enter" },
+      tempoEstudoDia: { label: "How long do you usually study per day, in total?" },
+      tempoPorDisciplina: { label: "How long do you usually study for each subject?" },
+      localizacao: { label: "Where do you live?", placeholder: "City or area (optional)" },
+      tempoDeslocacao: { label: "How long does it take you to get to school?" },
+    },
+    tempos: ["Less than 30 min", "30 min – 1h", "1h – 2h", "2h – 3h", "More than 3h"],
+    tempos_desloc: ["Less than 10 min", "10 – 20 min", "20 – 40 min", "More than 40 min"],
+    question_of: (i, n) => `Question ${i} of ${n}`,
+    optional: "optional",
+    dont_know: "I don't know",
+    skip: "Skip",
+    back: "Back",
+    next: "Next",
+    create_plan: "Create my plan",
+    prev_subject: "← previous subject",
+    explain_loading: "Thinking of an explanation…",
+    explain_fallback: "I couldn't load an explanation right now. Just answer as best you can — there's no wrong answer here.",
+    opening: "Opening Compass…",
+    hello: (n) => `Hello, ${n}`,
+    your_plan: "Your plan",
+    generate_new_plan: "Generate new plan",
+    updating: "Updating…",
+    tips_for_you: "Tips for you",
+    your_subjects: "Your subjects",
+    no_data: "No data yet",
+    tests_taken: (n) => `${n} test(s) taken`,
+    mini_test: "Mini-test",
+    big_test: "Big test",
+    focus_label: "Focus",
+    take_test_focus: "Take a test to see your focus",
+    key_topics: "Key topics",
+    why_matters: "Why it matters",
+    how_to_study: "How to study it",
+    refresh_overview: "Regenerate overview",
+    loading_overview: "Preparing an overview of this subject…",
+    history_title: "Test history",
+    no_history: "No tests taken yet.",
+    back_to_dashboard: "Back to dashboard",
+    preparing_test: (t, s) => `Preparing your ${t === "mini" ? "mini-test" : "test"} on ${s}…`,
+    could_not_generate: "I couldn't generate this right now. Try again.",
+    try_again: "Try again",
+    see_result: "See result",
+    correct_of: (c, n) => `${c} of ${n} correct`,
+    feedback_loading: "Preparing your feedback…",
+    agenda_title: "Agenda",
+    weekly_routine: "Weekly study routine",
+    upcoming_events: "Upcoming events",
+    no_events: "Nothing on your agenda yet. Add an exam date or reminder below.",
+    add_event: "Add",
+    ev_title_ph: "Event title (e.g. Math test)",
+    ev_subject_ph: "Subject (optional)",
+    settings_title: "Settings",
+    language_label: "Language",
+    profile_section: "Your profile",
+    name_label: "Name", age_label: "Age", school_label: "School", year_label: "Grade",
+    curriculum_label: "Curriculum", location_label: "Location", commute_label: "Commute time",
+    subjects_section: "Subjects",
+    add_subject_ph: "Add a subject and press Enter",
+    save_changes: "Save changes",
+    saved_confirmation: "Saved!",
+    danger_zone: "Danger zone",
+    reset_data: "Reset all data",
+    reset_confirm: "This will erase your profile, plan, test history and agenda. Are you sure?",
+    reset_button: "Yes, erase everything",
+    cancel: "Cancel",
+  },
+  pt: {
+    brand: "Bússola",
+    nav_dashboard: "Painel", nav_agenda: "Agenda", nav_settings: "Definições",
+    grade_suffix: "º Ano",
+    steps: {
+      nome: { label: "Como te chamas?", placeholder: "O teu nome" },
+      idade: { label: "Que idade tens?", placeholder: "Ex: 14" },
+      escola: { label: "Qual é o nome da tua escola?", placeholder: "Nome da escola" },
+      ano: { label: "Em que ano estás?" },
+      curriculo: { label: "Que currículo estás a seguir?", placeholder: "Ex: Nacional, Cambridge, IB…" },
+      disciplinas: { label: "Em que disciplinas precisas de ajuda?", placeholder: "Escreve uma disciplina e prime Enter" },
+      tempoEstudoDia: { label: "Quanto tempo costumas estudar por dia, ao todo?" },
+      tempoPorDisciplina: { label: "Quanto tempo costumas estudar para cada disciplina?" },
+      localizacao: { label: "Onde vives?", placeholder: "Cidade ou zona (opcional)" },
+      tempoDeslocacao: { label: "Quanto tempo demoras a chegar à escola?" },
+    },
+    tempos: ["Menos de 30 min", "30 min – 1h", "1h – 2h", "2h – 3h", "Mais de 3h"],
+    tempos_desloc: ["Menos de 10 min", "10 – 20 min", "20 – 40 min", "Mais de 40 min"],
+    question_of: (i, n) => `Pergunta ${i} de ${n}`,
+    optional: "opcional",
+    dont_know: "Não sei",
+    skip: "Saltar",
+    back: "Voltar",
+    next: "Seguinte",
+    create_plan: "Criar o meu plano",
+    prev_subject: "← disciplina anterior",
+    explain_loading: "A pensar numa explicação…",
+    explain_fallback: "Não consegui carregar uma explicação agora. Responde da melhor forma que conseguires — não há respostas erradas aqui.",
+    opening: "A abrir a Bússola…",
+    hello: (n) => `Olá, ${n}`,
+    your_plan: "O teu plano",
+    generate_new_plan: "Gerar novo plano",
+    updating: "A atualizar…",
+    tips_for_you: "Dicas para ti",
+    your_subjects: "As tuas disciplinas",
+    no_data: "Ainda sem dados",
+    tests_taken: (n) => `${n} teste(s) feito(s)`,
+    mini_test: "Mini-teste",
+    big_test: "Teste grande",
+    focus_label: "Foco",
+    take_test_focus: "Faz um teste para ver o teu foco",
+    key_topics: "Tópicos-chave",
+    why_matters: "Porque é importante",
+    how_to_study: "Como estudar",
+    refresh_overview: "Gerar resumo novamente",
+    loading_overview: "A preparar um resumo desta disciplina…",
+    history_title: "Histórico de testes",
+    no_history: "Ainda não fizeste nenhum teste.",
+    back_to_dashboard: "Voltar ao painel",
+    preparing_test: (t, s) => `A preparar o teu ${t === "mini" ? "mini-teste" : "teste"} de ${s}…`,
+    could_not_generate: "Não consegui gerar isto agora. Tenta outra vez.",
+    try_again: "Tentar de novo",
+    see_result: "Ver resultado",
+    correct_of: (c, n) => `${c} de ${n} corretas`,
+    feedback_loading: "A preparar o teu feedback…",
+    agenda_title: "Agenda",
+    weekly_routine: "Rotina semanal de estudo",
+    upcoming_events: "Próximos eventos",
+    no_events: "Ainda não tens nada na agenda. Adiciona uma data de teste ou lembrete abaixo.",
+    add_event: "Adicionar",
+    ev_title_ph: "Título do evento (ex: Teste de Matemática)",
+    ev_subject_ph: "Disciplina (opcional)",
+    settings_title: "Definições",
+    language_label: "Idioma",
+    profile_section: "O teu perfil",
+    name_label: "Nome", age_label: "Idade", school_label: "Escola", year_label: "Ano",
+    curriculum_label: "Currículo", location_label: "Localização", commute_label: "Tempo de deslocação",
+    subjects_section: "Disciplinas",
+    add_subject_ph: "Adiciona uma disciplina e prime Enter",
+    save_changes: "Guardar alterações",
+    saved_confirmation: "Guardado!",
+    danger_zone: "Zona de perigo",
+    reset_data: "Repor todos os dados",
+    reset_confirm: "Isto vai apagar o teu perfil, plano, histórico de testes e agenda. Tens a certeza?",
+    reset_button: "Sim, apagar tudo",
+    cancel: "Cancelar",
+  },
+  es: {
+    brand: "Brújula",
+    nav_dashboard: "Panel", nav_agenda: "Agenda", nav_settings: "Ajustes",
+    grade_suffix: "º Grado",
+    steps: {
+      nome: { label: "¿Cómo te llamas?", placeholder: "Tu nombre" },
+      idade: { label: "¿Cuántos años tienes?", placeholder: "Ej: 14" },
+      escola: { label: "¿Cómo se llama tu escuela?", placeholder: "Nombre de la escuela" },
+      ano: { label: "¿En qué grado estás?" },
+      curriculo: { label: "¿Qué currículo sigues?", placeholder: "Ej: Nacional, Cambridge, IB…" },
+      disciplinas: { label: "¿En qué asignaturas necesitas ayuda?", placeholder: "Escribe una asignatura y pulsa Enter" },
+      tempoEstudoDia: { label: "¿Cuánto tiempo sueles estudiar al día, en total?" },
+      tempoPorDisciplina: { label: "¿Cuánto tiempo sueles estudiar para cada asignatura?" },
+      localizacao: { label: "¿Dónde vives?", placeholder: "Ciudad o zona (opcional)" },
+      tempoDeslocacao: { label: "¿Cuánto tardas en llegar a la escuela?" },
+    },
+    tempos: ["Menos de 30 min", "30 min – 1h", "1h – 2h", "2h – 3h", "Más de 3h"],
+    tempos_desloc: ["Menos de 10 min", "10 – 20 min", "20 – 40 min", "Más de 40 min"],
+    question_of: (i, n) => `Pregunta ${i} de ${n}`,
+    optional: "opcional",
+    dont_know: "No lo sé",
+    skip: "Saltar",
+    back: "Atrás",
+    next: "Siguiente",
+    create_plan: "Crear mi plan",
+    prev_subject: "← asignatura anterior",
+    explain_loading: "Pensando en una explicación…",
+    explain_fallback: "No pude cargar una explicación ahora. Responde lo mejor que puedas — no hay respuestas incorrectas aquí.",
+    opening: "Abriendo Brújula…",
+    hello: (n) => `Hola, ${n}`,
+    your_plan: "Tu plan",
+    generate_new_plan: "Generar nuevo plan",
+    updating: "Actualizando…",
+    tips_for_you: "Consejos para ti",
+    your_subjects: "Tus asignaturas",
+    no_data: "Sin datos todavía",
+    tests_taken: (n) => `${n} examen(es) realizado(s)`,
+    mini_test: "Mini-examen",
+    big_test: "Examen grande",
+    focus_label: "Enfoque",
+    take_test_focus: "Haz un examen para ver tu enfoque",
+    key_topics: "Temas clave",
+    why_matters: "Por qué importa",
+    how_to_study: "Cómo estudiarlo",
+    refresh_overview: "Regenerar resumen",
+    loading_overview: "Preparando un resumen de esta asignatura…",
+    history_title: "Historial de exámenes",
+    no_history: "Todavía no has hecho ningún examen.",
+    back_to_dashboard: "Volver al panel",
+    preparing_test: (t, s) => `Preparando tu ${t === "mini" ? "mini-examen" : "examen"} de ${s}…`,
+    could_not_generate: "No pude generar esto ahora. Inténtalo de nuevo.",
+    try_again: "Intentar de nuevo",
+    see_result: "Ver resultado",
+    correct_of: (c, n) => `${c} de ${n} correctas`,
+    feedback_loading: "Preparando tu feedback…",
+    agenda_title: "Agenda",
+    weekly_routine: "Rutina semanal de estudio",
+    upcoming_events: "Próximos eventos",
+    no_events: "Todavía no tienes nada en tu agenda. Añade una fecha de examen o recordatorio abajo.",
+    add_event: "Añadir",
+    ev_title_ph: "Título del evento (ej: Examen de Matemáticas)",
+    ev_subject_ph: "Asignatura (opcional)",
+    settings_title: "Ajustes",
+    language_label: "Idioma",
+    profile_section: "Tu perfil",
+    name_label: "Nombre", age_label: "Edad", school_label: "Escuela", year_label: "Grado",
+    curriculum_label: "Currículo", location_label: "Ubicación", commute_label: "Tiempo de desplazamiento",
+    subjects_section: "Asignaturas",
+    add_subject_ph: "Añade una asignatura y pulsa Enter",
+    save_changes: "Guardar cambios",
+    saved_confirmation: "¡Guardado!",
+    danger_zone: "Zona de peligro",
+    reset_data: "Restablecer todos los datos",
+    reset_confirm: "Esto borrará tu perfil, plan, historial de exámenes y agenda. ¿Estás seguro?",
+    reset_button: "Sí, borrar todo",
+    cancel: "Cancelar",
+  },
+  fr: {
+    brand: "Boussole",
+    nav_dashboard: "Tableau de bord", nav_agenda: "Agenda", nav_settings: "Réglages",
+    grade_suffix: "e année",
+    steps: {
+      nome: { label: "Comment t'appelles-tu ?", placeholder: "Ton nom" },
+      idade: { label: "Quel âge as-tu ?", placeholder: "Ex : 14" },
+      escola: { label: "Quel est le nom de ton école ?", placeholder: "Nom de l'école" },
+      ano: { label: "En quelle année es-tu ?" },
+      curriculo: { label: "Quel programme suis-tu ?", placeholder: "Ex : National, Cambridge, IB…" },
+      disciplinas: { label: "Dans quelles matières as-tu besoin d'aide ?", placeholder: "Tape une matière et appuie sur Entrée" },
+      tempoEstudoDia: { label: "Combien de temps étudies-tu par jour, au total ?" },
+      tempoPorDisciplina: { label: "Combien de temps étudies-tu pour chaque matière ?" },
+      localizacao: { label: "Où habites-tu ?", placeholder: "Ville ou région (facultatif)" },
+      tempoDeslocacao: { label: "Combien de temps mets-tu pour aller à l'école ?" },
+    },
+    tempos: ["Moins de 30 min", "30 min – 1h", "1h – 2h", "2h – 3h", "Plus de 3h"],
+    tempos_desloc: ["Moins de 10 min", "10 – 20 min", "20 – 40 min", "Plus de 40 min"],
+    question_of: (i, n) => `Question ${i} sur ${n}`,
+    optional: "facultatif",
+    dont_know: "Je ne sais pas",
+    skip: "Passer",
+    back: "Retour",
+    next: "Suivant",
+    create_plan: "Créer mon plan",
+    prev_subject: "← matière précédente",
+    explain_loading: "Réflexion à une explication…",
+    explain_fallback: "Je n'ai pas pu charger d'explication pour le moment. Réponds du mieux que tu peux — il n'y a pas de mauvaise réponse ici.",
+    opening: "Ouverture de Boussole…",
+    hello: (n) => `Bonjour, ${n}`,
+    your_plan: "Ton plan",
+    generate_new_plan: "Générer un nouveau plan",
+    updating: "Mise à jour…",
+    tips_for_you: "Conseils pour toi",
+    your_subjects: "Tes matières",
+    no_data: "Pas encore de données",
+    tests_taken: (n) => `${n} test(s) passé(s)`,
+    mini_test: "Mini-test",
+    big_test: "Grand test",
+    focus_label: "Priorité",
+    take_test_focus: "Fais un test pour voir ta priorité",
+    key_topics: "Sujets clés",
+    why_matters: "Pourquoi c'est important",
+    how_to_study: "Comment l'étudier",
+    refresh_overview: "Régénérer le résumé",
+    loading_overview: "Préparation d'un résumé de cette matière…",
+    history_title: "Historique des tests",
+    no_history: "Aucun test passé pour le moment.",
+    back_to_dashboard: "Retour au tableau de bord",
+    preparing_test: (t, s) => `Préparation de ton ${t === "mini" ? "mini-test" : "test"} de ${s}…`,
+    could_not_generate: "Je n'ai pas pu générer ceci pour le moment. Réessaie.",
+    try_again: "Réessayer",
+    see_result: "Voir le résultat",
+    correct_of: (c, n) => `${c} sur ${n} correctes`,
+    feedback_loading: "Préparation de ton feedback…",
+    agenda_title: "Agenda",
+    weekly_routine: "Routine d'étude hebdomadaire",
+    upcoming_events: "Événements à venir",
+    no_events: "Rien dans ton agenda pour l'instant. Ajoute une date d'examen ou un rappel ci-dessous.",
+    add_event: "Ajouter",
+    ev_title_ph: "Titre de l'événement (ex : Test de maths)",
+    ev_subject_ph: "Matière (facultatif)",
+    settings_title: "Réglages",
+    language_label: "Langue",
+    profile_section: "Ton profil",
+    name_label: "Nom", age_label: "Âge", school_label: "École", year_label: "Année",
+    curriculum_label: "Programme", location_label: "Lieu", commute_label: "Temps de trajet",
+    subjects_section: "Matières",
+    add_subject_ph: "Ajoute une matière et appuie sur Entrée",
+    save_changes: "Enregistrer",
+    saved_confirmation: "Enregistré !",
+    danger_zone: "Zone de danger",
+    reset_data: "Réinitialiser toutes les données",
+    reset_confirm: "Cela effacera ton profil, ton plan, ton historique de tests et ton agenda. Es-tu sûr(e) ?",
+    reset_button: "Oui, tout effacer",
+    cancel: "Annuler",
+  },
+};
+
+const LANG_NAME_FOR_AI = { en: "English", pt: "European Portuguese", es: "Spanish", fr: "French" };
+
+const STEP_ORDER = ["nome", "idade", "escola", "ano", "curriculo", "disciplinas", "tempoEstudoDia", "tempoPorDisciplina", "localizacao", "tempoDeslocacao"];
+const STEP_TYPES = {
+  nome: "text", idade: "number", escola: "text", ano: "choice", curriculo: "text",
+  disciplinas: "tags", tempoEstudoDia: "choice", tempoPorDisciplina: "perDisciplina",
+  localizacao: "text", tempoDeslocacao: "choice",
+};
+const OPTIONAL_STEPS = { localizacao: true, tempoDeslocacao: true };
+const GRADE_NUMBERS = [5, 6, 7, 8, 9, 10, 11, 12];
+const DOW_KEYS = { en: ["Su","Mo","Tu","We","Th","Fr","Sa"], pt: ["Do","Se","Te","Qu","Qu","Se","Sá"], es: ["Do","Lu","Ma","Mi","Ju","Vi","Sá"], fr: ["Di","Lu","Ma","Me","Je","Ve","Sa"] };
+const MONTH_NAMES = {
+  en: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+  pt: ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"],
+  es: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+  fr: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+};
+
+// ---------------- API helpers ----------------
+
+async function callClaude(prompt) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  const data = await response.json();
+  const text = (data.content || []).map((b) => (b.type === "text" ? b.text : "")).filter(Boolean).join("\n");
+  return text;
+}
+
+function parseJSONLoose(text) {
+  const clean = text.replace(/```json|```/g, "").trim();
+  const objStart = clean.indexOf("{");
+  const objEnd = clean.lastIndexOf("}");
+  const arrStart = clean.indexOf("[");
+  let candidate = clean;
+  if (objStart !== -1 && objEnd !== -1) candidate = clean.slice(objStart, objEnd + 1);
+  else if (arrStart !== -1) candidate = clean.slice(arrStart);
+  return JSON.parse(candidate);
+}
+
+async function loadData() {
+  try {
+    const res = await window.storage.get("compass-data");
+    return res ? JSON.parse(res.value) : null;
+  } catch (e) { return null; }
+}
+async function saveData(data) {
+  try { await window.storage.set("compass-data", JSON.stringify(data)); }
+  catch (e) { console.error("Save error", e); }
+}
+
+// ---------------- Small icons (primitive-based, no external icon set) ----------------
+
+function IconCompass({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="15,9 13,13 9,15 11,11" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function IconCalendar({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="8" y1="3" x2="8" y2="7" />
+      <line x1="16" y1="3" x2="16" y2="7" />
+    </svg>
+  );
+}
+function IconGear({ size = 20 }) {
+  const teeth = Array.from({ length: 8 });
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="8.5" strokeDasharray="2 3.3" />
+    </svg>
+  );
+}
+function IconCheck({ size = 16 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="4,13 9,18 20,6" /></svg>);
+}
+function IconX({ size = 16 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>);
+}
+function IconHelp({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="currentColor" stroke="none" fontFamily="Work Sans, sans-serif">?</text>
+    </svg>
+  );
+}
+function IconArrowRight({ size = 16 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="12" x2="18" y2="12" /><polyline points="12,6 18,12 12,18" /></svg>);
+}
+function IconArrowLeft({ size = 16 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="20" y1="12" x2="6" y2="12" /><polyline points="12,6 6,12 12,18" /></svg>);
+}
+function IconChevron({ dir = "left", size = 18 }) {
+  const pts = dir === "left" ? "14,5 8,12 14,19" : "10,5 16,12 10,19";
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points={pts} /></svg>);
+}
+function IconClock({ size = 12 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><line x1="12" y1="12" x2="12" y2="7" /><line x1="12" y1="12" x2="16" y2="14" /></svg>);
+}
+function IconMapPin({ size = 14 }) {
+  return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="10" r="3" /><path d="M12 21c-4-4-7-7.5-7-11a7 7 0 0 1 14 0c0 3.5-3 7-7 11z" /></svg>);
+}
+
+// ---------------- Compass rose visual ----------------
+
+function CompassRose({ subjects, stats, size = 170 }) {
+  const withStats = subjects.filter((s) => stats[s] && typeof stats[s].percentagem === "number");
+  let angle = 0;
+  let target = null;
+  if (withStats.length > 0) {
+    target = withStats.reduce((worst, s) => (stats[s].percentagem < stats[worst].percentagem ? s : worst), withStats[0]);
+    const idx = subjects.indexOf(target);
+    angle = (360 / subjects.length) * idx;
+  }
+  return (
+    <div className="compass-wrap" style={{ width: size }}>
+      <svg viewBox="0 0 200 200" width={size} height={size}>
+        <circle cx="100" cy="100" r="92" fill="var(--card)" stroke="var(--ink)" strokeWidth="2" />
+        <circle cx="100" cy="100" r="70" fill="none" stroke="var(--line)" strokeWidth="1" />
+        {subjects.map((s, i) => {
+          const a = (360 / subjects.length) * i - 90;
+          const rad = (a * Math.PI) / 180;
+          const x = 100 + 78 * Math.cos(rad);
+          const y = 100 + 78 * Math.sin(rad);
+          return (
+            <text key={s} x={x} y={y} textAnchor="middle" dominantBaseline="middle" className="compass-label" fill={s === target ? "var(--gold)" : "var(--ink)"}>
+              {s.slice(0, 3).toUpperCase()}
+            </text>
+          );
+        })}
+        <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: "100px 100px", transition: "transform 1s ease" }}>
+          <polygon points="100,30 108,100 100,112 92,100" fill="var(--gold)" />
+          <polygon points="100,170 108,100 100,88 92,100" fill="var(--ink)" />
+        </g>
+        <circle cx="100" cy="100" r="6" fill="var(--ink)" />
+      </svg>
+      <div className="compass-caption">{target ? <>{"Focus"}: <strong>{target}</strong></> : null}</div>
+    </div>
+  );
+}
+
+// ---------------- Top navigation ----------------
+
+function TopNav({ lang, t, view, setView }) {
+  return (
+    <div className="topnav">
+      <div className="brand"><IconCompass size={22} /> {t.brand}</div>
+      <div className="nav-tabs">
+        <button className={`nav-tab ${view === "dashboard" ? "active" : ""}`} onClick={() => setView("dashboard")}><IconCompass size={15} /> {t.nav_dashboard}</button>
+        <button className={`nav-tab ${view === "agenda" ? "active" : ""}`} onClick={() => setView("agenda")}><IconCalendar size={15} /> {t.nav_agenda}</button>
+        <button className={`nav-tab ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><IconGear size={15} /> {t.nav_settings}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Onboarding ----------------
+
+function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
+  const [i, setI] = useState(0);
+  const [tagInput, setTagInput] = useState("");
+  const [explain, setExplain] = useState("");
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [subIndex, setSubIndex] = useState(0);
+  const key = STEP_ORDER[i];
+  const type = STEP_TYPES[key];
+  const stepText = t.steps[key];
+  const optional = !!OPTIONAL_STEPS[key];
+  const inputRef = useRef(null);
+  const disciplinas = answers.disciplinas || [];
+
+  useEffect(() => {
+    setExplain(""); setTagInput(""); setSubIndex(0);
+    if (inputRef.current) inputRef.current.focus();
+  }, [i]);
+
+  function setAns(k, v) { setAnswers((prev) => ({ ...prev, [k]: v })); }
+  function next() { if (i < STEP_ORDER.length - 1) setI(i + 1); else onFinish(); }
+  function back() { if (i > 0) setI(i - 1); }
+
+  async function handleNaoSei() {
+    setExplainLoading(true); setExplain("");
+    try {
+      const contexto = key === "tempoPorDisciplina" ? ` about the subject "${disciplinas[subIndex]}"` : "";
+      const prompt = `A student is filling out a form and didn't understand this question: "${stepText.label}"${contexto}. Explain in 2-3 short, simple, friendly sentences what the question is asking, and give one example answer. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with plain text only, no JSON, no markdown.`;
+      const text = await callClaude(prompt);
+      setExplain(text.trim());
+    } catch (e) { setExplain(t.explain_fallback); }
+    finally { setExplainLoading(false); }
+  }
+
+  function canAdvance() {
+    if (optional) return true;
+    if (type === "tags") return disciplinas.length > 0;
+    if (type === "perDisciplina") {
+      const per = answers.tempoPorDisciplina || {};
+      return disciplinas.every((d) => per[d]);
+    }
+    const v = answers[key];
+    return v !== undefined && v !== null && String(v).trim() !== "";
+  }
+
+  function addTag() {
+    const tg = tagInput.trim();
+    if (!tg) return;
+    const cur = answers.disciplinas || [];
+    if (!cur.includes(tg)) setAns("disciplinas", [...cur, tg]);
+    setTagInput("");
+  }
+  function removeTag(tg) { setAns("disciplinas", (answers.disciplinas || []).filter((x) => x !== tg)); }
+
+  return (
+    <div className="onboard-screen">
+      <div className="progress-row">
+        {STEP_ORDER.map((s, idx) => (<div key={s} className={`dot ${idx === i ? "dot-active" : idx < i ? "dot-done" : ""}`} />))}
+      </div>
+      <div className="onboard-card">
+        <div className="eyebrow">{t.question_of(i + 1, STEP_ORDER.length)}{optional && <span className="optional-tag"> · {t.optional}</span>}</div>
+        <h2 className="question">{stepText.label}</h2>
+
+        {type === "text" && (
+          <input ref={inputRef} className="input-field" type="text" placeholder={stepText.placeholder}
+            value={answers[key] || ""} onChange={(e) => setAns(key, e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && canAdvance() && next()} />
+        )}
+        {type === "number" && (
+          <input ref={inputRef} className="input-field" type="number" placeholder={stepText.placeholder}
+            value={answers[key] || ""} onChange={(e) => setAns(key, e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && canAdvance() && next()} />
+        )}
+        {type === "choice" && key === "ano" && (
+          <div className="choice-grid">
+            {GRADE_NUMBERS.map((n) => {
+              const label = `${n}${t.grade_suffix}`;
+              return (
+                <button key={n} className={`choice-btn ${answers.ano === label ? "choice-selected" : ""}`} onClick={() => setAns("ano", label)}>{label}</button>
+              );
+            })}
+          </div>
+        )}
+        {type === "choice" && key === "tempoEstudoDia" && (
+          <div className="choice-grid">
+            {t.tempos.map((opt) => (<button key={opt} className={`choice-btn ${answers.tempoEstudoDia === opt ? "choice-selected" : ""}`} onClick={() => setAns("tempoEstudoDia", opt)}>{opt}</button>))}
+          </div>
+        )}
+        {type === "choice" && key === "tempoDeslocacao" && (
+          <div className="choice-grid">
+            {t.tempos_desloc.map((opt) => (<button key={opt} className={`choice-btn ${answers.tempoDeslocacao === opt ? "choice-selected" : ""}`} onClick={() => setAns("tempoDeslocacao", opt)}>{opt}</button>))}
+          </div>
+        )}
+        {type === "tags" && (
+          <div>
+            <input ref={inputRef} className="input-field" type="text" placeholder={stepText.placeholder} value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
+            <div className="tag-row">
+              {disciplinas.map((tg) => (<span key={tg} className="tag-chip">{tg}<button className="tag-remove" onClick={() => removeTag(tg)}>×</button></span>))}
+            </div>
+          </div>
+        )}
+        {type === "perDisciplina" && disciplinas.length > 0 && (
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 8 }}>{disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</div>
+            <div className="choice-grid">
+              {t.tempos.map((opt) => (
+                <button key={opt} className={`choice-btn ${(answers.tempoPorDisciplina || {})[disciplinas[subIndex]] === opt ? "choice-selected" : ""}`}
+                  onClick={() => {
+                    const cur = { ...(answers.tempoPorDisciplina || {}) };
+                    cur[disciplinas[subIndex]] = opt;
+                    setAns("tempoPorDisciplina", cur);
+                    if (subIndex < disciplinas.length - 1) setSubIndex(subIndex + 1);
+                  }}>{opt}</button>
+              ))}
+            </div>
+            {subIndex > 0 && (<button className="link-btn" onClick={() => setSubIndex(subIndex - 1)}>{t.prev_subject}</button>)}
+          </div>
+        )}
+
+        {explainLoading && <div className="explain-box explain-loading">{t.explain_loading}</div>}
+        {explain && <div className="explain-box">{explain}</div>}
+
+        <div className="nav-row">
+          <button className="ghost-btn" onClick={handleNaoSei} disabled={explainLoading}><IconHelp size={15} /> {t.dont_know}</button>
+          <div className="nav-right">
+            {i > 0 && (<button className="secondary-btn" onClick={back}><IconArrowLeft size={15} /> {t.back}</button>)}
+            {optional && !answers[key] && type !== "perDisciplina" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
+            <button className="primary-btn" onClick={next} disabled={!canAdvance()}>
+              {i === STEP_ORDER.length - 1 ? t.create_plan : t.next} <IconArrowRight size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Subject detail ----------------
+
+function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStats, onBack, onStartTest }) {
+  const s = stats[subject] || {};
+  const [overview, setOverview] = useState(s.overview || null);
+  const [loading, setLoading] = useState(!s.overview);
+
+  useEffect(() => { if (!s.overview) generate(); }, []);
+
+  async function generate() {
+    setLoading(true);
+    try {
+      const prompt = `A student in ${profile.ano || "an unspecified"} grade, following the "${profile.curriculo || "standard"}" curriculum at "${profile.escola || "their school"}", needs an overview of the subject "${subject}". Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"topicos_chave": ["...","...","..."], "porque_importa": "1-2 sentences", "como_estudar": "2-3 sentences with concrete study tips for this subject"}`;
+      const text = await callClaude(prompt);
+      const json = parseJSONLoose(text);
+      setOverview(json);
+      const nextStats = { ...stats, [subject]: { ...(stats[subject] || {}), overview: json } };
+      setStats(nextStats);
+      persistStats(nextStats);
+    } catch (e) {
+      setOverview({ topicos_chave: [], porque_importa: "", como_estudar: "" });
+    } finally { setLoading(false); }
+  }
+
+  const historico = s.historico || [];
+
+  return (
+    <div className="page-wrap">
+      <button className="link-btn" onClick={onBack}><IconArrowLeft size={14} /> {t.back_to_dashboard}</button>
+      <div className="detail-header" style={{ marginTop: 10 }}>
+        <h1 className="dash-title">{subject}</h1>
+        {typeof s.percentagem === "number" && <span className="subject-pct" style={{ marginLeft: 8 }}>{s.percentagem}%</span>}
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">{t.key_topics}</div>
+        {loading ? <p>{t.loading_overview}</p> : (
+          <>
+            <ul className="dicas-list">{(overview.topicos_chave || []).map((topic, idx) => (<li key={idx}>{topic}</li>))}</ul>
+            {overview.porque_importa && (<><div className="eyebrow" style={{ marginTop: 14 }}>{t.why_matters}</div><p className="resumo-text">{overview.porque_importa}</p></>)}
+            {overview.como_estudar && (<><div className="eyebrow" style={{ marginTop: 14 }}>{t.how_to_study}</div><p className="resumo-text">{overview.como_estudar}</p></>)}
+            <button className="link-btn" onClick={generate}>{t.refresh_overview}</button>
+          </>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">{t.history_title}</div>
+        {historico.length === 0 ? <p className="resumo-text">{t.no_history}</p> : (
+          <div style={{ marginTop: 8 }}>
+            {historico.slice().reverse().map((h, idx) => (
+              <div key={idx} className="history-row">
+                <span>{h.data} · {h.tipo === "mini" ? t.mini_test : t.big_test}</span>
+                <strong>{h.percentagem}%</strong>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="subject-actions" style={{ marginBottom: 30 }}>
+        <button className="secondary-btn" onClick={() => onStartTest(subject, "mini")}>{t.mini_test}</button>
+        <button className="primary-btn" onClick={() => onStartTest(subject, "grande")}>{t.big_test}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Dashboard ----------------
+
+function Dashboard({ lang, t, profile, plan, stats, onStartTest, onOpenSubject, onRegeneratePlan, planLoading }) {
+  const disciplinas = profile.disciplinas || [];
+  return (
+    <div className="page-wrap">
+      <div className="dash-header">
+        <div>
+          <div className="eyebrow">{t.hello(profile.nome)}</div>
+          <h1 className="dash-title">{t.brand}</h1>
+          <p className="dash-sub">{profile.ano} · {profile.escola}</p>
+        </div>
+        <CompassRose subjects={disciplinas} stats={stats} />
+      </div>
+
+      {plan && (
+        <div className="card">
+          <div className="eyebrow">{t.your_plan}</div>
+          <p className="resumo-text">{plan.resumo}</p>
+          <button className="link-btn" onClick={onRegeneratePlan} disabled={planLoading}>{planLoading ? t.updating : t.generate_new_plan}</button>
+        </div>
+      )}
+
+      {plan && plan.plano_semanal && plan.plano_semanal.length > 0 && (
+        <div className="week-grid">
+          {plan.plano_semanal.map((dia) => (
+            <div key={dia.dia} className="day-card">
+              <div className="day-label">{dia.dia}</div>
+              {dia.blocos.map((b, idx) => (
+                <div key={idx} className="block">
+                  <div className="block-disc">{b.disciplina}</div>
+                  <div className="block-meta"><IconClock size={12} /> {b.duracao}</div>
+                  <div className="block-foco">{b.foco}</div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {plan && plan.dicas && plan.dicas.length > 0 && (
+        <div className="card">
+          <div className="eyebrow">{t.tips_for_you}</div>
+          <ul className="dicas-list">{plan.dicas.map((d, idx) => (<li key={idx}>{d}</li>))}</ul>
+        </div>
+      )}
+
+      <div className="eyebrow" style={{ marginTop: 28, marginBottom: 10 }}>{t.your_subjects}</div>
+      <div className="subject-grid">
+        {disciplinas.map((d) => {
+          const s = stats[d];
+          return (
+            <div key={d} className="subject-card" onClick={() => onOpenSubject(d)}>
+              <div className="subject-name">{d}</div>
+              <div className="subject-pct">{s && typeof s.percentagem === "number" ? `${s.percentagem}%` : t.no_data}</div>
+              {s && s.historico && s.historico.length > 0 && (<div className="subject-history">{t.tests_taken(s.historico.length)}</div>)}
+              <div className="subject-actions" onClick={(e) => e.stopPropagation()}>
+                <button className="secondary-btn small" onClick={() => onStartTest(d, "mini")}>{t.mini_test}</button>
+                <button className="primary-btn small" onClick={() => onStartTest(d, "grande")}>{t.big_test}</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Test ----------------
+
+function TestView({ lang, t, config, profile, onFinish, onCancel }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [questions, setQuestions] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [answers, setAnswersState] = useState([]);
+  const [revealed, setRevealed] = useState(false);
+  const [chosen, setChosen] = useState(null);
+  const [naoSei, setNaoSei] = useState(false);
+
+  useEffect(() => { generate(); }, []);
+
+  async function generate() {
+    setLoading(true); setError("");
+    try {
+      const n = config.tipo === "mini" ? 5 : 10;
+      const prompt = `Create a ${n}-question multiple-choice test on the subject "${config.disciplina}", suitable for a student in ${profile.ano} grade at "${profile.escola}", following the "${profile.curriculo}" curriculum. Match the level and style typical of a real school test for that grade in that curriculum. Each question must have exactly 4 options and only one correct answer. Explanations must be at most 20 words. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON, no text before or after, in this exact format: {"perguntas":[{"pergunta":"...","opcoes":["...","...","...","..."],"resposta_correta":0,"explicacao":"..."}]}`;
+      const text = await callClaude(prompt);
+      const json = parseJSONLoose(text);
+      setQuestions(json.perguntas || []);
+    } catch (e) { setError(t.could_not_generate); }
+    finally { setLoading(false); }
+  }
+
+  function selectOption(oIdx) { if (revealed) return; setChosen(oIdx); setRevealed(true); setNaoSei(false); }
+  function selectNaoSei() { if (revealed) return; setNaoSei(true); setRevealed(true); setChosen(null); }
+
+  function proceed() {
+    const q = questions[idx];
+    const correta = chosen === q.resposta_correta;
+    const newAnswers = [...answers, { pergunta: q.pergunta, correta, naoSei }];
+    setAnswersState(newAnswers);
+    setRevealed(false); setChosen(null); setNaoSei(false);
+    if (idx < questions.length - 1) setIdx(idx + 1);
+    else onFinish(newAnswers, questions);
+  }
+
+  if (loading) return (<div className="center-screen"><IconCompass size={32} /><p>{t.preparing_test(config.tipo, config.disciplina)}</p></div>);
+  if (error) return (
+    <div className="center-screen">
+      <p>{error}</p>
+      <div className="nav-row" style={{ justifyContent: "center" }}>
+        <button className="secondary-btn" onClick={onCancel}>{t.back}</button>
+        <button className="primary-btn" onClick={generate}>{t.try_again}</button>
+      </div>
+    </div>
+  );
+
+  const q = questions[idx];
+  if (!q) return null;
+
+  return (
+    <div className="onboard-screen">
+      <div className="progress-row">{questions.map((_, i2) => (<div key={i2} className={`dot ${i2 === idx ? "dot-active" : i2 < idx ? "dot-done" : ""}`} />))}</div>
+      <div className="onboard-card">
+        <div className="eyebrow">{config.disciplina} · {t.question_of(idx + 1, questions.length)}</div>
+        <h2 className="question">{q.pergunta}</h2>
+        <div className="option-list">
+          {q.opcoes.map((op, oIdx) => {
+            let cls = "option-btn";
+            if (revealed) {
+              if (oIdx === q.resposta_correta) cls += " option-correct";
+              else if (oIdx === chosen) cls += " option-wrong";
+            }
+            return (
+              <button key={oIdx} className={cls} onClick={() => selectOption(oIdx)} disabled={revealed}>
+                {op}
+                {revealed && oIdx === q.resposta_correta && <IconCheck size={16} />}
+                {revealed && oIdx === chosen && oIdx !== q.resposta_correta && <IconX size={16} />}
+              </button>
+            );
+          })}
+        </div>
+        {revealed && <div className="explain-box">{q.explicacao}</div>}
+        <div className="nav-row">
+          <button className="ghost-btn" onClick={selectNaoSei} disabled={revealed}><IconHelp size={15} /> {t.dont_know}</button>
+          <div className="nav-right">
+            {revealed && (<button className="primary-btn" onClick={proceed}>{idx === questions.length - 1 ? t.see_result : t.next} <IconArrowRight size={15} /></button>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Result ----------------
+
+function ResultView({ lang, t, config, answers, profile, onBack }) {
+  const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState(null);
+  const pct = Math.round((answers.filter((a) => a.correta).length / answers.length) * 100);
+
+  useEffect(() => { gerarFeedback(); }, []);
+
+  async function gerarFeedback() {
+    setLoading(true);
+    try {
+      const resumo = answers.map((a) => `- ${a.pergunta}: ${a.naoSei ? "didn't know" : a.correta ? "correct" : "incorrect"}`).join("\n");
+      const prompt = `A student in ${profile.ano} grade took a test on "${config.disciplina}" and scored ${pct}%. Answers:\n${resumo}\nWrite brief, encouraging feedback (3-4 sentences) about the performance, and identify up to 3 concrete topics to improve. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY JSON: {"feedback":"...","topicos_para_melhorar":["...","..."]}`;
+      const text = await callClaude(prompt);
+      const json = parseJSONLoose(text);
+      setFeedback(json);
+    } catch (e) {
+      setFeedback({ feedback: "Well done for finishing the test! Keep practicing to improve even more.", topicos_para_melhorar: [] });
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <div className="center-screen">
+      <div className="result-card">
+        <div className="eyebrow">{config.disciplina}</div>
+        <div className="result-pct">{pct}%</div>
+        <p className="result-count">{t.correct_of(answers.filter((a) => a.correta).length, answers.length)}</p>
+        {loading ? <p>{t.feedback_loading}</p> : (
+          <>
+            <p className="feedback-text">{feedback.feedback}</p>
+            {feedback.topicos_para_melhorar && feedback.topicos_para_melhorar.length > 0 && (
+              <div className="tag-row" style={{ justifyContent: "center" }}>
+                {feedback.topicos_para_melhorar.map((tp, idx) => (<span key={idx} className="tag-chip topic-chip">{tp}</span>))}
+              </div>
+            )}
+          </>
+        )}
+        <button className="primary-btn" style={{ marginTop: 20 }} onClick={() => onBack(pct, feedback)}>{t.back_to_dashboard}</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Agenda ----------------
+
+function Agenda({ lang, t, profile, plan, events, setEvents, persistEvents }) {
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDate, setNewDate] = useState(today.toISOString().slice(0, 10));
+  const [newSubject, setNewSubject] = useState("");
+
+  const year = viewDate.getFullYear(), month = viewDate.getMonth();
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  function dateKey(d) { return `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`; }
+  function hasEvent(d) { return events.some((e) => e.date === dateKey(d)); }
+  const isToday = (d) => dateKey(d) === today.toISOString().slice(0, 10);
+
+  function addEvent() {
+    if (!newTitle.trim() || !newDate) return;
+    const ev = { id: Date.now().toString(), date: newDate, title: newTitle.trim(), subject: newSubject.trim() };
+    const next = [...events, ev];
+    setEvents(next); persistEvents(next);
+    setNewTitle(""); setNewSubject("");
+  }
+  function removeEvent(id) {
+    const next = events.filter((e) => e.id !== id);
+    setEvents(next); persistEvents(next);
+  }
+
+  const upcoming = events.slice().sort((a, b) => a.date.localeCompare(b.date));
+
+  return (
+    <div className="page-wrap">
+      <h1 className="dash-title" style={{ marginBottom: 18 }}>{t.agenda_title}</h1>
+
+      <div className="card">
+        <div className="cal-header">
+          <button className="cal-nav-btn" onClick={() => setViewDate(new Date(year, month - 1, 1))}><IconChevron dir="left" size={16} /></button>
+          <div className="eyebrow" style={{ fontSize: 14 }}>{MONTH_NAMES[lang][month]} {year}</div>
+          <button className="cal-nav-btn" onClick={() => setViewDate(new Date(year, month + 1, 1))}><IconChevron dir="right" size={16} /></button>
+        </div>
+        <div className="cal-grid">
+          {DOW_KEYS[lang].map((dw, i) => (<div key={i} className="cal-dow">{dw}</div>))}
+          {cells.map((d, i) => {
+            if (d === null) return <div key={i} className="cal-day empty" />;
+            const key = dateKey(d);
+            return (
+              <div key={i} className={`cal-day ${isToday(d) ? "today" : ""} ${selectedDate === key ? "selected" : ""}`}
+                onClick={() => { setSelectedDate(key); setNewDate(key); }}>
+                <span>{d}</span>
+                {hasEvent(d) && <span className="cal-dot" />}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {plan && plan.plano_semanal && plan.plano_semanal.length > 0 && (
+        <div className="card">
+          <div className="eyebrow">{t.weekly_routine}</div>
+          <div className="week-grid" style={{ marginTop: 10, marginBottom: 0 }}>
+            {plan.plano_semanal.map((dia) => (
+              <div key={dia.dia} className="day-card">
+                <div className="day-label">{dia.dia}</div>
+                {dia.blocos.map((b, idx) => (
+                  <div key={idx} className="block">
+                    <div className="block-disc">{b.disciplina}</div>
+                    <div className="block-meta"><IconClock size={12} /> {b.duracao}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="card" style={{ marginBottom: 40 }}>
+        <div className="eyebrow">{t.upcoming_events}</div>
+        <div className="add-event-form">
+          <input className="input-field" type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+          <input className="input-field" type="text" placeholder={t.ev_title_ph} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+          <input className="input-field" type="text" placeholder={t.ev_subject_ph} value={newSubject} onChange={(e) => setNewSubject(e.target.value)} />
+          <button className="primary-btn" onClick={addEvent}>{t.add_event}</button>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          {upcoming.length === 0 ? <p className="resumo-text">{t.no_events}</p> : upcoming.map((e) => (
+            <div key={e.id} className="event-item">
+              <div>
+                <div className="event-date-badge">{e.date}</div>
+                <div className="event-title">{e.title}</div>
+                {e.subject && <div className="event-subject"><IconMapPin size={11} /> {e.subject}</div>}
+              </div>
+              <button className="del-btn" onClick={() => removeEvent(e.id)}><IconX size={16} /></button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Settings ----------------
+
+function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onReset }) {
+  const [draft, setDraft] = useState(profile);
+  const [tagInput, setTagInput] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+
+  function setField(k, v) { setDraft((prev) => ({ ...prev, [k]: v })); setSaved(false); }
+  function addSubject() {
+    const tg = tagInput.trim();
+    if (!tg) return;
+    const cur = draft.disciplinas || [];
+    if (!cur.includes(tg)) setField("disciplinas", [...cur, tg]);
+    setTagInput("");
+  }
+  function removeSubject(tg) { setField("disciplinas", (draft.disciplinas || []).filter((x) => x !== tg)); }
+
+  function save() {
+    setProfile(draft);
+    persistProfile(draft);
+    setSaved(true);
+  }
+
+  return (
+    <div className="page-wrap" style={{ paddingBottom: 40 }}>
+      <h1 className="dash-title" style={{ marginBottom: 18 }}>{t.settings_title}</h1>
+
+      <div className="card">
+        <div className="field-label">{t.language_label}</div>
+        <div className="lang-grid">
+          {Object.keys(LANGS).map((code) => (
+            <button key={code} className={`choice-btn ${lang === code ? "choice-selected" : ""}`} onClick={() => setLang(code)}>{LANGS[code]}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 12 }}>{t.profile_section}</div>
+        <div className="settings-grid">
+          <div className="field-group"><label className="field-label">{t.name_label}</label><input className="input-field" value={draft.nome || ""} onChange={(e) => setField("nome", e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">{t.age_label}</label><input className="input-field" type="number" value={draft.idade || ""} onChange={(e) => setField("idade", e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">{t.school_label}</label><input className="input-field" value={draft.escola || ""} onChange={(e) => setField("escola", e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">{t.year_label}</label><input className="input-field" value={draft.ano || ""} onChange={(e) => setField("ano", e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">{t.curriculum_label}</label><input className="input-field" value={draft.curriculo || ""} onChange={(e) => setField("curriculo", e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">{t.location_label}</label><input className="input-field" value={draft.localizacao || ""} onChange={(e) => setField("localizacao", e.target.value)} /></div>
+        </div>
+
+        <div className="field-group">
+          <label className="field-label">{t.subjects_section}</label>
+          <input className="input-field" type="text" placeholder={t.add_subject_ph} value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubject(); } }} />
+          <div className="tag-row">
+            {(draft.disciplinas || []).map((tg) => (<span key={tg} className="tag-chip">{tg}<button className="tag-remove" onClick={() => removeSubject(tg)}>×</button></span>))}
+          </div>
+        </div>
+
+        <div className="save-bar">
+          <button className="primary-btn" onClick={save}>{t.save_changes}</button>
+          {saved && <span className="saved-msg"><IconCheck size={14} /> {t.saved_confirmation}</span>}
+        </div>
+      </div>
+
+      <div className="danger-zone">
+        <div className="eyebrow" style={{ color: "var(--error)" }}>{t.danger_zone}</div>
+        {!confirmingReset ? (
+          <button className="secondary-btn" style={{ marginTop: 10 }} onClick={() => setConfirmingReset(true)}>{t.reset_data}</button>
+        ) : (
+          <div style={{ marginTop: 10 }}>
+            <p className="resumo-text">{t.reset_confirm}</p>
+            <div className="nav-row" style={{ marginTop: 0, justifyContent: "flex-start" }}>
+              <button className="danger-btn" onClick={onReset}>{t.reset_button}</button>
+              <button className="secondary-btn" onClick={() => setConfirmingReset(false)}>{t.cancel}</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Main App ----------------
+
+function App() {
+  const [lang, setLang] = useState("en");
+  const [view, setView] = useState("loading");
+  const [answers, setAnswers] = useState({});
+  const [plan, setPlan] = useState(null);
+  const [stats, setStats] = useState({});
+  const [events, setEvents] = useState([]);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [testConfig, setTestConfig] = useState(null);
+  const [testAnswers, setTestAnswers] = useState(null);
+  const [activeSubject, setActiveSubject] = useState(null);
+
+  const t = T[lang];
+
+  useEffect(() => {
+    (async () => {
+      const data = await loadData();
+      if (data && data.profile && data.profile.nome) {
+        setAnswers(data.profile);
+        setPlan(data.plan || null);
+        setStats(data.stats || {});
+        setEvents(data.events || []);
+        setLang(data.lang || "en");
+        setView("dashboard");
+      } else {
+        setView("onboarding");
+      }
+    })();
+  }, []);
+
+  async function persist(partial) {
+    const base = { profile: answers, plan, stats, events, lang };
+    const merged = { ...base, ...partial };
+    await saveData(merged);
+  }
+
+  async function gerarPlano(profile) {
+    setPlanLoading(true);
+    try {
+      const prompt = `Create a weekly study plan for a student with this data: ${JSON.stringify(profile)}. Take into account how much they already study per day and per subject, their grade and curriculum. Be realistic and don't overload the student. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"resumo":"1-2 sentences about the overall strategy","plano_semanal":[{"dia":"Monday","blocos":[{"disciplina":"...","duracao":"30 min","foco":"..."}]}],"dicas":["...","...","..."]}. Include 5 days (Monday to Friday), with day names translated into ${LANG_NAME_FOR_AI[lang]}.`;
+      const text = await callClaude(prompt);
+      const json = parseJSONLoose(text);
+      setPlan(json);
+      await persist({ profile, plan: json });
+    } catch (e) {
+      setPlan({ resumo: "I couldn't generate the plan right now — try again anytime.", plano_semanal: [], dicas: [] });
+    } finally { setPlanLoading(false); }
+  }
+
+  async function handleOnboardingFinish() {
+    setView("dashboard");
+    await persist({ profile: answers });
+    gerarPlano(answers);
+  }
+
+  function startTest(disciplina, tipo) { setTestConfig({ disciplina, tipo }); setActiveSubject(null); setView("test"); }
+  function handleTestFinish(finalAnswers) { setTestAnswers(finalAnswers); setView("result"); }
+
+  async function handleResultBack(pct, feedback) {
+    const nextStats = { ...stats };
+    const key = testConfig.disciplina;
+    const historico = (nextStats[key] && nextStats[key].historico) || [];
+    nextStats[key] = {
+      ...(nextStats[key] || {}),
+      percentagem: pct,
+      historico: [...historico, { data: new Date().toISOString().slice(0, 10), tipo: testConfig.tipo, percentagem: pct, topicos: feedback ? feedback.topicos_para_melhorar : [] }],
+    };
+    setStats(nextStats);
+    await persist({ stats: nextStats });
+    setView("dashboard");
+  }
+
+  async function handleReset() {
+    await window.storage.delete("compass-data").catch(() => {});
+    setAnswers({}); setPlan(null); setStats({}); setEvents([]);
+    setView("onboarding");
+  }
+
+  const showNav = ["dashboard", "agenda", "settings", "subject"].includes(view);
+
+  return (
+    <div className="app-root">
+      {showNav && <TopNav lang={lang} t={t} view={view === "subject" ? "dashboard" : view} setView={setView} />}
+
+      {view === "loading" && (<div className="center-screen"><IconCompass size={32} /><p>{t.opening}</p></div>)}
+
+      {view === "onboarding" && (
+        <Onboarding lang={lang} t={t} answers={answers} setAnswers={setAnswers} onFinish={handleOnboardingFinish} />
+      )}
+
+      {view === "dashboard" && (
+        <Dashboard lang={lang} t={t} profile={answers} plan={plan} stats={stats} planLoading={planLoading}
+          onStartTest={startTest}
+          onOpenSubject={(d) => { setActiveSubject(d); setView("subject"); }}
+          onRegeneratePlan={() => gerarPlano(answers)} />
+      )}
+
+      {view === "subject" && activeSubject && (
+        <SubjectDetail lang={lang} t={t} subject={activeSubject} profile={answers} stats={stats} setStats={setStats}
+          persistStats={(next) => persist({ stats: next })}
+          onBack={() => setView("dashboard")} onStartTest={startTest} />
+      )}
+
+      {view === "agenda" && (
+        <Agenda lang={lang} t={t} profile={answers} plan={plan} events={events} setEvents={setEvents}
+          persistEvents={(next) => persist({ events: next })} />
+      )}
+
+      {view === "settings" && (
+        <Settings lang={lang} setLang={(l) => { setLang(l); persist({ lang: l }); }} t={t} profile={answers} setProfile={setAnswers}
+          persistProfile={(next) => persist({ profile: next })} onReset={handleReset} />
+      )}
+
+      {view === "test" && testConfig && (
+        <TestView lang={lang} t={t} config={testConfig} profile={answers} onFinish={handleTestFinish} onCancel={() => setView("dashboard")} />
+      )}
+
+      {view === "result" && testConfig && testAnswers && (
+        <ResultView lang={lang} t={t} config={testConfig} answers={testAnswers} profile={answers} onBack={handleResultBack} />
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
+
+
+
