@@ -209,6 +209,9 @@
   .plan-price { font-family: 'Fraunces', serif; font-size: 26px; margin: 6px 0; }
   .plan-old-price { text-decoration: line-through; color: var(--muted); font-size: 14px; margin-right: 8px; }
   .promo-row { display: flex; gap: 8px; margin-top: 10px; }
+  .promo-input-wrap { position: relative; flex: 1; }
+  .promo-input-wrap .input-field { width: 100%; padding-right: 42px; letter-spacing: 3px; }
+  .promo-eye-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; color: var(--muted); padding: 4px; display: flex; align-items: center; }
   .promo-msg-ok { color: var(--teal); font-size: 13px; margin-top: 6px; }
   .promo-msg-err { color: var(--error); font-size: 13px; margin-top: 6px; }
   .demo-note { font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
@@ -236,7 +239,7 @@ const LANGS = {
 const T = {
   en: {
     brand: "Compass",
-    nav_dashboard: "Dashboard", nav_agenda: "Agenda", nav_settings: "Settings",
+    nav_dashboard: "Dashboard", nav_agenda: "Agenda", nav_settings: "Settings", nav_admin: "Admin",
     grade_suffix: "th Grade",
     steps: {
       nome: { label: "What's your name?", placeholder: "Your name" },
@@ -345,10 +348,17 @@ const T = {
     weaknesses_title: "Areas to improve",
     no_strengths_yet: "Take a few tests to see your strengths.",
     no_weaknesses_yet: "Take a few tests to see areas to improve.",
+    admin_title: "Admin panel",
+    admin_access_note: "Manage where subscription payments are sent.",
+    stripe_account_label: "Stripe account ID",
+    stripe_account_ph: "acct_xxxxxxxxxxxx",
+    stripe_save: "Save",
+    stripe_saved: "Saved!",
+    admin_not_authorized: "You don't have access to this page.",
   },
   pt: {
     brand: "Bússola",
-    nav_dashboard: "Painel", nav_agenda: "Agenda", nav_settings: "Definições",
+    nav_dashboard: "Painel", nav_agenda: "Agenda", nav_settings: "Definições", nav_admin: "Admin",
     grade_suffix: "º Ano",
     steps: {
       nome: { label: "Como te chamas?", placeholder: "O teu nome" },
@@ -457,10 +467,17 @@ const T = {
     weaknesses_title: "A melhorar",
     no_strengths_yet: "Faz alguns testes para veres os teus pontos fortes.",
     no_weaknesses_yet: "Faz alguns testes para veres o que precisas de melhorar.",
+    admin_title: "Painel de administração",
+    admin_access_note: "Gere para onde vão os pagamentos das subscrições.",
+    stripe_account_label: "ID da conta Stripe",
+    stripe_account_ph: "acct_xxxxxxxxxxxx",
+    stripe_save: "Guardar",
+    stripe_saved: "Guardado!",
+    admin_not_authorized: "Não tens acesso a esta página.",
   },
   es: {
     brand: "Brújula",
-    nav_dashboard: "Panel", nav_agenda: "Agenda", nav_settings: "Ajustes",
+    nav_dashboard: "Panel", nav_agenda: "Agenda", nav_settings: "Ajustes", nav_admin: "Admin",
     grade_suffix: "º Grado",
     steps: {
       nome: { label: "¿Cómo te llamas?", placeholder: "Tu nombre" },
@@ -569,10 +586,17 @@ const T = {
     weaknesses_title: "Por mejorar",
     no_strengths_yet: "Haz algunos exámenes para ver tus puntos fuertes.",
     no_weaknesses_yet: "Haz algunos exámenes para ver qué mejorar.",
+    admin_title: "Panel de administración",
+    admin_access_note: "Gestiona a dónde van los pagos de las suscripciones.",
+    stripe_account_label: "ID de cuenta de Stripe",
+    stripe_account_ph: "acct_xxxxxxxxxxxx",
+    stripe_save: "Guardar",
+    stripe_saved: "¡Guardado!",
+    admin_not_authorized: "No tienes acceso a esta página.",
   },
   fr: {
     brand: "Boussole",
-    nav_dashboard: "Tableau de bord", nav_agenda: "Agenda", nav_settings: "Réglages",
+    nav_dashboard: "Tableau de bord", nav_agenda: "Agenda", nav_settings: "Réglages", nav_admin: "Admin",
     grade_suffix: "e année",
     steps: {
       nome: { label: "Comment t'appelles-tu ?", placeholder: "Ton nom" },
@@ -681,6 +705,13 @@ const T = {
     weaknesses_title: "À améliorer",
     no_strengths_yet: "Passe quelques tests pour voir tes points forts.",
     no_weaknesses_yet: "Passe quelques tests pour voir ce qu'il faut améliorer.",
+    admin_title: "Panneau d'administration",
+    admin_access_note: "Gère où vont les paiements des abonnements.",
+    stripe_account_label: "ID de compte Stripe",
+    stripe_account_ph: "acct_xxxxxxxxxxxx",
+    stripe_save: "Enregistrer",
+    stripe_saved: "Enregistré !",
+    admin_not_authorized: "Tu n'as pas accès à cette page.",
   },
 };
 
@@ -705,16 +736,17 @@ const MONTH_NAMES = {
 const TRIAL_DAYS = 7;
 const PRICES = { monthly: 4.99, yearly: 40 };
 const ONE_TIME_PROMO_CODES = ["sergio", "tomas", "marim"];
+const ADMIN_EMAILS = ["francisco.escada.carvalho@gmail.com", "tomas.carvalho22@park-is.com", "2kiko.carvalho2@gmail.com"];
 
 // ---------------- API helpers ----------------
 
-async function callClaude(prompt) {
+async function callClaude(prompt, maxTokens = 2000) {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
-      max_tokens: 1200,
+      max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -804,6 +836,9 @@ function computeAccess(account) {
   if (!account) return false;
   if (account.subscription && account.subscription.active) return true;
   return trialDaysLeft(account) > 0;
+}
+function isAdminUser(account) {
+  return !!account && ADMIN_EMAILS.includes((account.username || "").trim().toLowerCase());
 }
 
 // ---------------- Strengths / weaknesses helpers ----------------
@@ -895,6 +930,19 @@ function IconClock({ size = 12 }) {
 function IconMapPin({ size = 14 }) {
   return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="10" r="3" /><path d="M12 21c-4-4-7-7.5-7-11a7 7 0 0 1 14 0c0 3.5-3 7-7 11z" /></svg>);
 }
+function IconEye({ open = true, size = 16 }) {
+  return open ? (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.87 19.87 0 0 1 5.06-6.06M9.9 4.24A9.7 9.7 0 0 1 12 4c7 0 11 8 11 8a19.86 19.86 0 0 1-3.22 4.44M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
 
 // ---------------- Compass rose visual ----------------
 
@@ -936,7 +984,7 @@ function CompassRose({ t, subjects, stats, size = 170 }) {
 
 // ---------------- Top navigation ----------------
 
-function TopNav({ lang, t, view, setView, username, onLogout }) {
+function TopNav({ lang, t, view, setView, username, onLogout, isAdmin }) {
   return (
     <div className="topnav">
       <div className="brand"><IconCompass size={22} /> {t.brand}</div>
@@ -944,6 +992,7 @@ function TopNav({ lang, t, view, setView, username, onLogout }) {
         <button className={`nav-tab ${view === "dashboard" ? "active" : ""}`} onClick={() => setView("dashboard")}><IconCompass size={15} /> {t.nav_dashboard}</button>
         <button className={`nav-tab ${view === "agenda" ? "active" : ""}`} onClick={() => setView("agenda")}><IconCalendar size={15} /> {t.nav_agenda}</button>
         <button className={`nav-tab ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><IconGear size={15} /> {t.nav_settings}</button>
+        {isAdmin && (<button className={`nav-tab ${view === "admin" ? "active" : ""}`} onClick={() => setView("admin")}><IconGear size={15} /> {t.nav_admin}</button>)}
       </div>
       <div className="nav-account">
         {username && <span className="nav-username">{username}</span>}
@@ -1043,6 +1092,7 @@ function Paywall({ t, account, onSubscribe }) {
   const [planSel, setPlanSel] = useState("monthly");
   const [promo, setPromo] = useState("");
   const [promoResult, setPromoResult] = useState(null);
+  const [showPromo, setShowPromo] = useState(false);
 
   function applyPromo() {
     const code = promo.trim().toLowerCase();
@@ -1083,7 +1133,14 @@ function Paywall({ t, account, onSubscribe }) {
       <div className="card">
         <div className="field-label">{t.promo_label}</div>
         <div className="promo-row">
-          <input className="input-field" value={promo} onChange={(e) => { setPromo(e.target.value); setPromoResult(null); }} onKeyDown={(e) => e.key === "Enter" && applyPromo()} />
+          <div className="promo-input-wrap">
+            <input className="input-field" type={showPromo ? "text" : "password"} value={promo}
+              onChange={(e) => { setPromo(e.target.value); setPromoResult(null); }}
+              onKeyDown={(e) => e.key === "Enter" && applyPromo()} />
+            <button type="button" className="promo-eye-btn" onClick={() => setShowPromo(!showPromo)} aria-label="toggle promo code visibility">
+              <IconEye open={!showPromo} size={16} />
+            </button>
+          </div>
           <button className="secondary-btn" onClick={applyPromo}>{t.promo_apply}</button>
         </div>
         {promoResult && promoResult.error && <div className="promo-msg-err">{promoResult.error}</div>}
@@ -1121,8 +1178,24 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
   }, [i]);
 
   function setAns(k, v) { setAnswers((prev) => ({ ...prev, [k]: v })); }
-  function next() { if (i < STEP_ORDER.length - 1) setI(i + 1); else onFinish(); }
-  function back() { if (i > 0) setI(i - 1); }
+
+  function next() {
+    if ((type === "perDisciplinaTags" || type === "perDisciplina") && disciplinas.length > 0 && subIndex < disciplinas.length - 1) {
+      setSubIndex(subIndex + 1);
+      return;
+    }
+    if (i < STEP_ORDER.length - 1) setI(i + 1); else onFinish();
+  }
+  function back() {
+    if ((type === "perDisciplinaTags" || type === "perDisciplina") && subIndex > 0) {
+      setSubIndex(subIndex - 1);
+      return;
+    }
+    if (i > 0) setI(i - 1);
+  }
+  function skipStep() {
+    if (i < STEP_ORDER.length - 1) setI(i + 1); else onFinish();
+  }
 
   async function handleNaoSei() {
     setExplainLoading(true); setExplain("");
@@ -1178,7 +1251,13 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
         {STEP_ORDER.map((s, idx) => (<div key={s} className={`dot ${idx === i ? "dot-active" : idx < i ? "dot-done" : ""}`} />))}
       </div>
       <div className="onboard-card">
-        <div className="eyebrow">{t.question_of(i + 1, STEP_ORDER.length)}{optional && <span className="optional-tag"> · {t.optional}</span>}</div>
+        <div className="eyebrow">
+          {t.question_of(i + 1, STEP_ORDER.length)}
+          {optional && <span className="optional-tag"> · {t.optional}</span>}
+          {(type === "perDisciplinaTags" || type === "perDisciplina") && disciplinas.length > 0 && (
+            <span> · {disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</span>
+          )}
+        </div>
         <h2 className="question">{stepText.label}</h2>
 
         {type === "text" && (
@@ -1223,7 +1302,6 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
         )}
         {type === "perDisciplinaTags" && disciplinas.length > 0 && (
           <div>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>{disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</div>
             <input ref={inputRef} className="input-field" type="text" placeholder={stepText.placeholder} value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDificuldade(); } }} />
@@ -1232,15 +1310,10 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
                 <span key={tg} className="tag-chip">{tg}<button className="tag-remove" onClick={() => removeDificuldade(tg)}>×</button></span>
               ))}
             </div>
-            <div className="nav-row" style={{ marginTop: 10 }}>
-              {subIndex > 0 && (<button className="link-btn" onClick={() => setSubIndex(subIndex - 1)}>{t.prev_subject}</button>)}
-              {subIndex < disciplinas.length - 1 && (<button className="link-btn" onClick={() => setSubIndex(subIndex + 1)}>{t.next} →</button>)}
-            </div>
           </div>
         )}
         {type === "perDisciplina" && disciplinas.length > 0 && (
           <div>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>{disciplinas[subIndex]} ({subIndex + 1}/{disciplinas.length})</div>
             <div className="choice-grid">
               {t.tempos.map((opt) => (
                 <button key={opt} className={`choice-btn ${(answers.tempoPorDisciplina || {})[disciplinas[subIndex]] === opt ? "choice-selected" : ""}`}
@@ -1252,7 +1325,6 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
                   }}>{opt}</button>
               ))}
             </div>
-            {subIndex > 0 && (<button className="link-btn" onClick={() => setSubIndex(subIndex - 1)}>{t.prev_subject}</button>)}
           </div>
         )}
 
@@ -1262,11 +1334,11 @@ function Onboarding({ lang, t, answers, setAnswers, onFinish }) {
         <div className="nav-row">
           <button className="ghost-btn" onClick={handleNaoSei} disabled={explainLoading}><IconHelp size={15} /> {t.dont_know}</button>
           <div className="nav-right">
-            {i > 0 && (<button className="secondary-btn" onClick={back}><IconArrowLeft size={15} /> {t.back}</button>)}
-            {optional && !answers[key] && type !== "perDisciplina" && type !== "perDisciplinaTags" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
-            {type === "perDisciplinaTags" && (<button className="secondary-btn" onClick={next}>{t.skip}</button>)}
+            {(i > 0 || subIndex > 0) && (<button className="secondary-btn" onClick={back}><IconArrowLeft size={15} /> {t.back}</button>)}
+            {optional && !answers[key] && type !== "perDisciplina" && type !== "perDisciplinaTags" && (<button className="secondary-btn" onClick={skipStep}>{t.skip}</button>)}
+            {type === "perDisciplinaTags" && (<button className="secondary-btn" onClick={skipStep}>{t.skip}</button>)}
             <button className="primary-btn" onClick={next} disabled={!canAdvance()}>
-              {i === STEP_ORDER.length - 1 ? t.create_plan : t.next} <IconArrowRight size={15} />
+              {i === STEP_ORDER.length - 1 && !((type === "perDisciplinaTags" || type === "perDisciplina") && subIndex < disciplinas.length - 1) ? t.create_plan : t.next} <IconArrowRight size={15} />
             </button>
           </div>
         </div>
@@ -1290,7 +1362,7 @@ function SubjectDetail({ lang, t, subject, profile, stats, setStats, persistStat
       const dificuldades = (profile.dificuldadesPorDisciplina && profile.dificuldadesPorDisciplina[subject]) || [];
       const dificuldadesTxt = dificuldades.length > 0 ? ` The student has previously mentioned struggling with: ${dificuldades.join(", ")}.` : "";
       const prompt = `A student in ${profile.ano || "an unspecified"} grade, following the "${profile.curriculo || "standard"}" curriculum at "${profile.escola || "their school"}", needs an overview of the subject "${subject}".${dificuldadesTxt} Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"topicos_chave": ["...","...","..."], "porque_importa": "1-2 sentences", "como_estudar": "2-3 sentences with concrete study tips for this subject"}`;
-      const text = await callClaude(prompt);
+      const text = await callClaude(prompt, 1200);
       const json = parseJSONLoose(text);
       setOverview(json);
       const nextStats = { ...stats, [subject]: { ...(stats[subject] || {}), overview: json } };
@@ -1481,7 +1553,7 @@ function TestView({ lang, t, config, profile, previousQuestions, weakTopics, onF
         ? ` The student has previously struggled with these topics: ${weakTopics.join(", ")}. Dedicate at least half of the questions to these topics, at a level that helps the student practice and improve.`
         : "";
       const prompt = `Create a ${n}-question multiple-choice test on the subject "${config.disciplina}", suitable for a student in ${profile.ano} grade at "${profile.escola}", following the "${profile.curriculo}" curriculum. Match the level and style typical of a real school test for that grade in that curriculum. Each question must have exactly 4 options and only one correct answer. Explanations must be at most 20 words.${weakTxt}${avoidTxt} Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON, no text before or after, in this exact format: {"perguntas":[{"pergunta":"...","opcoes":["...","...","...","..."],"resposta_correta":0,"explicacao":"..."}]}`;
-      const text = await callClaude(prompt);
+      const text = await callClaude(prompt, 4000);
       const json = parseJSONLoose(text);
       const perguntas = json.perguntas || [];
       if (perguntas.length === 0) throw new Error("No questions generated");
@@ -1565,7 +1637,7 @@ function ResultView({ lang, t, config, answers, profile, onBack }) {
     try {
       const resumo = answers.map((a) => `- ${a.pergunta}: ${a.naoSei ? "didn't know" : a.correta ? "correct" : "incorrect"}`).join("\n");
       const prompt = `A student in ${profile.ano} grade took a test on "${config.disciplina}" and scored ${pct}%. Answers:\n${resumo}\nWrite brief, encouraging feedback (3-4 sentences) about the performance, and identify up to 3 concrete topics the student did well in and up to 3 concrete topics to improve. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY JSON: {"feedback":"...","pontos_fortes":["...","..."],"topicos_para_melhorar":["...","..."]}`;
-      const text = await callClaude(prompt);
+      const text = await callClaude(prompt, 1200);
       const json = parseJSONLoose(text);
       setFeedback(json);
     } catch (e) {
@@ -1805,6 +1877,52 @@ function Settings({ lang, setLang, t, profile, setProfile, persistProfile, onRes
   );
 }
 
+// ---------------- Admin ----------------
+
+function AdminPanel({ t }) {
+  const [stripeId, setStripeId] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    try {
+      const res = await window.storage.get("compass-admin-settings", true);
+      if (res && res.value) {
+        const parsed = JSON.parse(res.value);
+        setStripeId(parsed.stripeAccountId || "");
+      }
+    } catch (e) {
+      // no settings saved yet
+    }
+  }
+
+  async function save() {
+    try {
+      await window.storage.set("compass-admin-settings", JSON.stringify({ stripeAccountId: stripeId.trim() }), true);
+      setSaved(true);
+    } catch (e) { console.error("Save admin settings error", e); }
+  }
+
+  return (
+    <div className="page-wrap" style={{ paddingBottom: 40 }}>
+      <h1 className="dash-title" style={{ marginBottom: 18 }}>{t.admin_title}</h1>
+      <div className="card">
+        <p className="resumo-text">{t.admin_access_note}</p>
+        <div className="field-group">
+          <label className="field-label">{t.stripe_account_label}</label>
+          <input className="input-field" type="text" placeholder={t.stripe_account_ph} value={stripeId}
+            onChange={(e) => { setStripeId(e.target.value); setSaved(false); }} />
+        </div>
+        <div className="save-bar">
+          <button className="primary-btn" onClick={save}>{t.stripe_save}</button>
+          {saved && <span className="saved-msg"><IconCheck size={14} /> {t.stripe_saved}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- Main App ----------------
 
 function App() {
@@ -1877,7 +1995,7 @@ function App() {
     setPlanLoading(true);
     try {
       const prompt = `Create a weekly study plan for a student with this data: ${JSON.stringify(profileData)}. Take into account how much they already study per day and per subject, their grade and curriculum, and especially any specific difficulty topics they mentioned per subject (dificuldadesPorDisciplina) — give those subjects more time and more targeted focus. Be realistic and don't overload the student. Respond in ${LANG_NAME_FOR_AI[lang]}. Respond with ONLY valid JSON in this exact format: {"resumo":"1-2 sentences about the overall strategy","plano_semanal":[{"dia":"Monday","blocos":[{"disciplina":"...","duracao":"30 min","foco":"..."}]}],"dicas":["...","...","..."]}. Include 5 days (Monday to Friday), with day names translated into ${LANG_NAME_FOR_AI[lang]}.`;
-      const text = await callClaude(prompt);
+      const text = await callClaude(prompt, 3000);
       const json = parseJSONLoose(text);
       setPlan(json);
       await persist({ profile: profileData, plan: json });
@@ -1943,14 +2061,15 @@ function App() {
     setView("auth");
   }
 
-  const showNav = ["dashboard", "agenda", "settings", "subject", "paywall"].includes(view);
+  const isAdmin = isAdminUser(account);
+  const showNav = ["dashboard", "agenda", "settings", "subject", "paywall", "admin"].includes(view);
   const showTrialBanner = ["dashboard", "agenda", "subject"].includes(view) && account && computeAccess(account) && !(account.subscription && account.subscription.active);
 
   return (
     <div className="app-root">
       {showNav && (
         <TopNav lang={lang} t={t} view={view === "subject" ? "dashboard" : view} setView={requestView}
-          username={account && account.username} onLogout={handleLogout} />
+          username={account && account.username} onLogout={handleLogout} isAdmin={isAdmin} />
       )}
 
       {view === "loading" && (<div className="center-screen"><IconCompass size={32} /><p>{t.opening}</p></div>)}
@@ -2001,6 +2120,10 @@ function App() {
         <Settings lang={lang} setLang={setLang} t={t} profile={answers} setProfile={setAnswers}
           persistProfile={(next) => persist({ profile: next })} onReset={handleReset}
           account={account} onGoPaywall={() => setView("paywall")} onLogout={handleLogout} />
+      )}
+
+      {view === "admin" && account && (
+        isAdmin ? <AdminPanel t={t} /> : (<div className="center-screen"><p>{t.admin_not_authorized}</p></div>)
       )}
 
       {view === "test" && testConfig && (
